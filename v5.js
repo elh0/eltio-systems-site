@@ -327,14 +327,14 @@
   }
   var ROLES = {
     prod: { n: "Producer", h1: "Production admin, made easy.", lede: "Advances, crew invoices, permits and clients, run from your phone. If you can send a text, you can run Systems.",
-      fine: "For UK production companies and producers. No card, no call, no download.",
+      fine: "For UK production companies and producers: commercials, film and TV. No card, no call, no download.",
       cards: [["Award · 09:12", "Drafted", "Advance invoice, 50%", "£42,000"], ["Crew invoices · 32", "30 match", "Into the 7-day run", "£21,480"], ["On set · 14:31", "Approved", "The canal shot, by the agency", "+£5,220"]],
       taps: [["Forward the award email.", "The 50% advance and the balance are drafted, with the dates in your calendar.", scr("Inbox · 09:12", '<p class="scr-mail">Re: Sportswear spot<br><b>We\'d love to go with you.</b></p>' + scard("Advance, 50%", "£42,000.00", "Due 7 days before the shoot"), "Send the invoice")],
         ["Tap wrap.", "Once a day, for the whole unit. Every crew member's overtime is worked out.", scr("Day 2 · call 06:30", '<div class="scr-big">20:30</div><span class="scr-q c">Wrap, logged for 32 crew</span>' + scard("On overtime", "18 crew", "Worked out at each person's band"), "Wrap", 1)],
         ["Approve the pay run.", "Every crew invoice is read and checked first. The odd one out gets a polite query.", PAY]],
       wrap: true, client: true, chips: PROD_CHIPS },
     pm: { n: "Production manager", h1: "Production admin, made easy.", lede: "Permits, start packs, holds and the pay run, without keeping any of it in your head.",
-      fine: "For UK production companies and producers. No card, no call, no download.",
+      fine: "For UK production companies and producers: commercials, film and TV. No card, no call, no download.",
       cards: [["Start packs · 14 crew", "3 to chase", "Bank, UTR, right to work", "11 of 14"], ["Permits", "This week", "Westminster, 3 working days", "8 days"], ["Holds · Tue, Wed", "Booked", "Northbound Films, confirmed", "32 crew"]],
       taps: [["Add the shoot date.", "Every permit and licence deadline is counted back from it, with the urgent ones first.", scr("Shoot in 26 days", rows([["Child licence", "apply now", "amber"], ["City of London", "by 29 Oct"], ["Westminster", "by 12 Nov"]]), "Start the applications")],
         ["Drop in the crew list.", "Start packs go out and get chased: bank details, UTR, right to work.", scr("Start packs · 14 crew", rows([["Back and complete", "11"], ["Sound recordist, UTR", "chase", "amber"], ["Runner, right to work", "chase", "amber"]]), "Send the chasers")],
@@ -531,19 +531,76 @@
   $$(".pr-h > *, .pr-build, .pr-fine, .pr-perks li, .price .sp-note").forEach(function (el, i) { watch(el, (i % 4) * 70); }); $$("#prPlans .plan").forEach(function (el, i) { watch(el, i * 80); });
   prDraw();
 
+  /* Try it: the dashboard it opens on. Crew get their diary and an offer, producers their shoot. */
+  var dbEl = $("#db"), dbProd = false, dbTook = "", dbInfo = false, dbFill = 0, DBW = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"], DBM = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+  function dbDraw() {
+    if (!dbEl) return;
+    var t = new Date(); t.setHours(0, 0, 0, 0);
+    var at = function (n) { var d = new Date(t); d.setDate(d.getDate() + n); return d; };
+    if (!dbProd) {
+      var mark = { 5: "pn", 8: "bk", 9: "bk", 12: "pn" }; mark[2] = dbTook === "Confirmed" ? "bk" : dbTook === "Pencil" ? "pn" : dbTook ? "" : "of";
+      var cells = ""; for (var i = 0; i < 14; i++) { var d = at(i), m = mark[i] || ""; cells += '<div class="db-d' + (i ? "" : " now") + (m ? " " + m : "") + '"><span>' + DBW[d.getDay()] + "</span><b>" + d.getDate() + '</b><i class="' + (m ? "k-" + m : "") + '"></i></div>'; }
+      var od = at(2);
+      dbEl.innerHTML = '<div class="db-h"><span class="lab">Your diary · next two weeks</span><span class="db-key"><span><i class="k-bk"></i>Booked</span><span><i class="k-pn"></i>Hold</span><span><i class="k-of"></i>Offer</span></span></div><div class="db-days">' + cells + "</div>" +
+        '<div class="db-of"><span class="t"><span class="db-who"><i class="av" style="--h:18">ML</i><b>Maya</b><span class="q">Producer, Halde Films</span></span><span class="db-hi">"Hi Sam, this one just popped in. One day on a sportswear spot. Free?"</span><span class="q">Sportswear spot · 1 day · ' + od.getDate() + " " + DBM[od.getMonth()] + "</span>" + (dbTook === "" ? '<button type="button" class="db-mi" data-dbi>' + (dbInfo ? "Less" : "See Maya's profile and reply") + "</button>" : "") + "</span>" +
+        (dbInfo && dbTook === "" ? '<div class="db-info"><p class="db-dm"><span class="lab">Maya Lindqvist · pays crew in 9 days</span>Produces sportswear and music films in east London. Found you in the directory. One day, two cameras on a stage in E2. Could you hold it until Thursday?</p><div class="db-kv"><span>DP</span><b>Jonah A.</b><span>Call</span><b>07:00, Canal St Studios</b><span>Camera body</span><b>Alexa 35 <i>your field</i></b></div><p class="db-rp">Reply: "Can you send the treatment?"</p></div>' : "") +
+        (dbTook === "" ? '<span class="db-b"><button class="pill" data-db="Confirmed">I\'m in</button><button class="pill gh" data-db="Pencil">Hold it</button><button class="pill gh" data-db="No">Not this time</button></span>'
+          : '<span class="db-done"><span>' + (dbTook === "Confirmed" ? "You're in. Maya gets your yes." : dbTook === "Pencil" ? "Held. Maya sees you as Pencilled." : "A kind no is drafted to Maya.") + '</span><button type="button" data-db="">Again</button></span>') + "</div>";
+    } else {
+      var rows = [["Sound recordist", "Nobody yet", "find"], ["2nd AC", "Offer sent to Priya K.", "wait"], ["Spark", "Pencilled: Leon B.", "pen"]], n = 29 + dbFill;
+      dbEl.innerHTML = '<div class="db-h"><span class="lab">Your shoot · Canal promo · tomorrow</span><span class="st-p pen">' + (32 - n) + ' to fill</span></div><div class="db-bar"><b>' + n + "</b><span>of 32 crew booked</span><span class=\"bar\"><i style=\"width:" + (n / 32 * 100).toFixed(1) + '%"></i></span></div>' +
+        rows.map(function (r, i) { var done = i < dbFill; return '<div class="db-r"><span>' + r[0] + '<span class="q">' + (done ? "Booked" + (i === 0 ? ": Kit M., from the directory" : i === 1 ? ": Priya K." : ": Leon B.") : r[1]) + "</span></span>" + (done ? '<span class="st-p av-ok">Booked</span>' : i === dbFill ? '<button class="pill" data-dbf>' + (r[2] === "find" ? "Find crew" : r[2] === "wait" ? "Nudge" : "Confirm") + "</button>" : '<span class="st-p' + (r[2] === "pen" ? " pen" : "") + '">' + (r[2] === "pen" ? "Pencilled" : "Waiting") + "</span>") + "</div>"; }).join("");
+    }
+  }
+  if (dbEl) dbEl.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-db")) { dbTook = b.getAttribute("data-db"); dbInfo = false; dbDraw(); }
+    if (b.hasAttribute("data-dbi")) { dbInfo = !dbInfo; dbDraw(); }
+    if (b.hasAttribute("data-dbf")) { dbFill = Math.min(3, dbFill + 1); dbDraw(); }
+  });
+  /* One sign-off: the chain, timesheet and invoice together, and for producers the day's hot cost. */
+  var sgEl = $("#sg"), sgProd = false, sgDone = 0;
+  function sgDraw() {
+    if (!sgEl) return;
+    var names = sgProd ? ["Camera HoD", "PM", "You"] : ["Camera HoD", "PM", "Producer"], fin = sgDone >= names.length;
+    var chain = '<span class="sg-chain">' + names.map(function (n, i) { return '<span class="' + (i < sgDone ? "ok" : i === sgDone ? "now" : "") + '">' + (i < sgDone ? "&#10003; " : "") + n + "</span>"; }).join('<i aria-hidden="true">&rsaquo;</i>') + "</span>";
+    var who = sgProd ? "Ana R., 1st AC" : "You, 1st AC";
+    var steps = '<div class="sg-steps">' + ["Submitted", "Approved", "Invoiced", "Paid"].map(function (t, i) { return '<span class="' + (i === 0 || (fin && i <= 2) ? "on" : "") + '">' + t + "</span>"; }).join("") + "</div>";
+    var lab = 1180 * (fin ? 1 : 0), today = 21480 + lab, todate = 38960 + lab;
+    sgEl.innerHTML = '<div class="sg-h"><span class="lab">Canal promo · ' + who + '</span><span class="st-p' + (fin ? " av-ok" : " pen") + '">' + (fin ? "Signed off" : "Waiting") + "</span></div>" + chain +
+      '<div class="sg-two"><div><span>Timesheet</span><b>2 days, 3 hrs over</b><span>APA, worked out</span></div><div><span>Invoice</span><b>&pound;1,180</b><span>drafted from it</span></div></div>' + steps +
+      (fin ? '<button class="pill" data-sga>Play it again</button>' : '<button class="pill" data-sgn>' + (sgProd && sgDone === names.length - 1 ? "Approve both" : sgProd ? "Next: " + names[sgDone] + " approves" : names[sgDone] + " approves") + "</button>") +
+      (sgProd ? '<div class="sg-hot"><span class="lab">Hot cost · day 2</span><div class="row"><span>Labour today</span><b>' + gbp0(today) + '</b></div><div class="row"><span>To date, of &pound;52,000</span><b>' + gbp0(todate) + '</b></div><span class="bar"><i style="width:' + (todate / 52000 * 100).toFixed(1) + '%"></i></span></div>' : "");
+  }
+  if (sgEl) sgEl.addEventListener("click", function (e) { var b = e.target.closest("button"); if (!b) return; if (b.hasAttribute("data-sgn")) sgDone++; if (b.hasAttribute("data-sga")) sgDone = 0; sgDraw(); });
+  function sgSet(prod) {
+    sgProd = prod; sgDone = 0; sgDraw();
+    $("#sgH").textContent = prod ? "Approve the day. Pay the right amount." : "Timesheet and invoice. One tap.";
+    $("#sgP").textContent = prod ? "Timesheet, invoice and approval in one tap. Hot cost updates as you go." : "Timesheet, invoice and approval in one app.";
+  }
+  function dbSet(prod) {
+    dbProd = prod; dbTook = ""; dbInfo = false; dbFill = 0; dbDraw();
+    $("#dbH").textContent = prod ? "Open it. Your shoot's already there." : "Open it. Your week's already there.";
+    $("#dbP").textContent = prod ? "Tomorrow's shoot, who's booked and what's left to fill." : "Your fortnight, your holds, and offers from real people.";
+  }
+
   function render(key, R) {
     R = R || ROLES[key];
     try { localStorage.setItem("sys-role", key === "other" ? "other:" + R.n : key); } catch (e) {}
+    try { document.dispatchEvent(new CustomEvent("sysrole", { detail: key })); } catch (e) {}
     $$("button", pills).forEach(function (b) { b.setAttribute("aria-checked", b.getAttribute("data-r") === key ? "true" : "false"); });
     other.hidden = key !== "other";
     var sel = $('[data-r="' + key + '"]', pills); if (sel && pills.scrollWidth > pills.clientWidth) pills.scrollTo({ left: sel.offsetLeft - 16, behavior: "smooth" });
     $("#asName").textContent = R.n;
     bdKey = key; bdDraw();
     prPlan = key === "prod" || key === "pm" ? "producer" : "crew"; prDraw();
+    dbSet(key === "prod" || key === "pm"); sgSet(key === "prod" || key === "pm");
+    var pr = key === "prod" || key === "pm", dc = $("#dvCrew"), dp = $("#dvProd");
+    if (dc && dp) { dc.classList.toggle("on", !pr); dp.classList.toggle("on", pr); dc.parentNode.insertBefore(pr ? dp : dc, dc.parentNode.firstChild); $("#dvBar").textContent = pr ? "Hosted · your jobs" : "Your Google Drive · Work dashboard"; }
     if (R.rate) { $("#kcR").value = R.rate; kcDraw(); }
     dyKey = key === "other" ? guess(R.n) : key; dyReset();
     ibKey = key === "other" ? guess(R.n) : key; if (ibSeen) ibPlay();
-    $("#ibP").textContent = (key === "prod" || key === "pm") ? "Systems reads your work email and turns it into the job. Awards, crew invoices, client extras and council questions are sorted as they land. You only see what needs you, with the reply already drafted." : "Systems reads your work email and turns it into your diary, timesheets and invoices. Holds, call sheets, changes and payments are sorted as they land. You only see what needs you, with the reply already drafted.";
+    $("#ibP").textContent = (key === "prod" || key === "pm") ? "Your work email, sorted into the job, replies drafted." : "Your work email, sorted into diary, timesheets and invoices.";
     var tk = key === "other" ? guess(R.n) : key;
     $$('a[href^="app/"]').forEach(function (l) { if (!/\.html/.test(l.getAttribute("href"))) l.href = l.href.split("?")[0] + "?as=" + tk; });
     var gk = key === "other" ? guess(R.n) : key, crewH = ["prod", "pm", "dir"].indexOf(gk) < 0, H1 = crewH ? "Your diary. Minus the 10%." : R.h1;
@@ -557,7 +614,7 @@
     var c = R.crew || CREW.gaffer; RATE = c.rate; HR = RATE / 10; BAND = c.band;
     $("#liveWho").textContent = (R.crew ? "You, " + R.n.toLowerCase() : "Your gaffer") + " · £" + c.rate + " · APA";
     $("#wrapH").textContent = R.crew ? "You wrapped late. What are you owed?" : "They wrapped late. What do you owe?";
-    $("#wrapP").textContent = R.crew ? "Drag the wrap. Your overtime at your band, worked out before you invoice." : "Drag the wrap. This is how every crew invoice is checked, on APA terms, before you pay it.";
+    $("#wrapP").textContent = R.crew ? "Drag the wrap. Your overtime, worked out." : "Drag the wrap. Every crew invoice is checked like this.";
     last = RATE; drawLive();
     $("#clients").hidden = !R.client;
     var sp = $("#spot"); sp.hidden = !R.spot;
@@ -576,4 +633,66 @@
   var start = "prod";
   try { var saved = localStorage.getItem("sys-role") || ""; if (saved.indexOf("other:") === 0) { otherIn.value = saved.slice(6); render("other", custom(saved.slice(6))); start = null; } else if (ROLES[saved] && PICK.indexOf(saved) > -1) start = saved; } catch (e) {}
   if (start) render(start);
+})();
+/* Rate cards on the site (same figures as the app) and the section menu. */
+(function () {
+/* Rate cards: a day rate for every grade, so the rate fills in once the grade is picked. Row: [department, grade, day rate, overtime multiplier (0 = by day rate), 1 if the figure is from the current card]. 0 rate = own deal.
+   APA: card from 1 September 2026 where marked; the rest are preview figures to check against the card. Bectu: preview figures to check against the current Pact/Bectu cards. */
+var RATES = {
+  "APA": { basis: "10 hours plus an hour's lunch, or 9 continuous", rows: [
+    ["Camera", "Director of photography", 0, 1], ["Camera", "Camera operator", 656, 1.25, 1], ["Camera", "1st AC, focus puller", 575, 1.25, 1], ["Camera", "2nd AC, clapper loader", 448, 1.5, 1], ["Camera", "DIT", 527, 1.25, 1], ["Camera", "Video playback", 391, 0], ["Camera", "Camera trainee", 206, 0],
+    ["Lighting", "Gaffer", 585, 1.25, 1], ["Lighting", "Best boy", 494, 0], ["Lighting", "Desk op", 527, 0], ["Lighting", "Spark", 457, 1.5, 1], ["Lighting", "Genny op", 457, 0],
+    ["Grip", "Key grip", 575, 1.25, 1], ["Grip", "Grip", 526, 1.25, 1], ["Grip", "Assistant grip", 371, 0],
+    ["Sound", "Sound recordist", 536, 0], ["Sound", "Boom op", 412, 0], ["Sound", "Sound assistant", 309, 0],
+    ["Art", "Production designer", 0, 0], ["Art", "Art director", 464, 0], ["Art", "Standby props", 391, 0], ["Art", "Props", 361, 0], ["Art", "Art assistant", 258, 0],
+    ["Costume", "Costume designer", 464, 0], ["Costume", "Costume supervisor", 391, 0], ["Costume", "Costume assistant", 309, 0],
+    ["Hair and make-up", "HMU designer", 464, 0], ["Hair and make-up", "HMU artist", 391, 0], ["Hair and make-up", "HMU assistant", 288, 0],
+    ["Production", "Production manager", 464, 0], ["Production", "Production coordinator", 309, 0], ["Production", "1st AD", 618, 0], ["Production", "2nd AD", 412, 0], ["Production", "3rd AD", 309, 0], ["Production", "Location manager", 412, 0], ["Production", "Unit manager", 309, 0], ["Production", "Runner", 245, 1, 1],
+    ["Post", "Editor", 464, 0], ["Post", "Assistant editor", 288, 0]] },
+  "Bectu": { basis: "Pact/Bectu film and TV, 10 hours plus lunch, a day of the weekly rate", rows: [
+    ["Camera", "Director of photography", 0], ["Camera", "Camera operator", 560], ["Camera", "1st AC, focus puller", 420], ["Camera", "2nd AC, clapper loader", 320], ["Camera", "DIT", 380], ["Camera", "Video playback", 320], ["Camera", "Camera trainee", 180],
+    ["Lighting", "Gaffer", 470], ["Lighting", "Best boy", 400], ["Lighting", "Desk op", 420], ["Lighting", "Spark", 360], ["Lighting", "Genny op", 360],
+    ["Grip", "Key grip", 450], ["Grip", "Grip", 380], ["Grip", "Assistant grip", 310],
+    ["Sound", "Production sound mixer", 460], ["Sound", "Boom op", 360], ["Sound", "Sound assistant", 270],
+    ["Art", "Production designer", 0], ["Art", "Art director", 400], ["Art", "Standby props", 330], ["Art", "Props", 300], ["Art", "Art assistant", 220],
+    ["Costume", "Costume designer", 0], ["Costume", "Costume supervisor", 340], ["Costume", "Costume assistant", 260],
+    ["Hair and make-up", "HMU designer", 0], ["Hair and make-up", "HMU artist", 330], ["Hair and make-up", "HMU assistant", 240],
+    ["Production", "Production manager", 420], ["Production", "Production coordinator", 280], ["Production", "1st AD", 520], ["Production", "2nd AD", 360], ["Production", "3rd AD", 270], ["Production", "Location manager", 380], ["Production", "Unit manager", 290], ["Production", "Runner", 160],
+    ["Post", "Editor", 420], ["Post", "Assistant editor", 250]] }
+};
+  var rt = document.getElementById("rt"); if (!rt) return;
+  var G = document.getElementById("rtG"), deal = document.getElementById("rtDeal"), card = "APA", N = document.getElementById("rtN"), C = document.getElementById("rtCard"), SRC = document.getElementById("rtSrc");
+  var BY = { camera: "1st AC, focus puller", spark: "Spark", grip: "Grip", sound: "Sound recordist", dit: "DIT", gaffer: "Gaffer", art: "Art director", costume: "Costume supervisor", hmu: "HMU artist", locations: "Location manager", runner: "Runner", editor: "Editor", dop: "Camera operator", prod: "Spark", pm: "Spark", dir: "1st AD" };
+  function rateOf(g) { var r = RATES[card].rows.filter(function (x) { return x[1] === g; })[0]; return r ? r[2] : 0; }
+  function fill(g) { var dep = "", h = ""; RATES[card].rows.forEach(function (r) { if (r[0] !== dep) { h += (dep ? "</optgroup>" : "") + '<optgroup label="' + r[0] + '">'; dep = r[0]; } h += '<option' + (r[1] === g ? " selected" : "") + ">" + r[1] + "</option>"; }); G.innerHTML = h + "</optgroup>"; if (!G.value) G.selectedIndex = 2; }
+  function note() { var c = rateOf(G.value), d = Math.round(Number(deal.value) || 0) - c, row = RATES[card].rows.filter(function (x) { return x[1] === G.value; })[0] || []; C.textContent = c ? "£" + c : "Own deal"; if (SRC) SRC.textContent = card === "APA" ? (row[4] ? "APA card from 1 September 2026" + (row[3] ? ", overtime " + row[3] + "x." : ".") : "Preview figure, checked against the APA card before launch.") : "Preview figure, checked against the current Bectu card before launch."; N.textContent = !c ? "Own deal. Put in what you agreed." : !d ? "On the card." : "£" + Math.abs(d) + (d > 0 ? " above" : " below") + " the card. Overtime is worked out from your deal."; }
+  function pick(fillDeal) { var c = rateOf(G.value); if (fillDeal && c) deal.value = c; note(); }
+  rt.addEventListener("click", function (e) { var b = e.target.closest("[data-rc]"); if (!b) return; card = b.getAttribute("data-rc"); rt.querySelectorAll("[data-rc]").forEach(function (x) { x.setAttribute("aria-checked", String(x === b)); }); fill(G.value); pick(true); });
+  G.addEventListener("change", function () { pick(true); }); deal.addEventListener("input", note);
+  document.addEventListener("sysrole", function (e) { fill(BY[e.detail] || G.value || "1st AC, focus puller"); pick(true); });
+  fill(BY[(function () { try { return localStorage.getItem("sys-role"); } catch (e) { return ""; } })()] || "1st AC, focus puller"); pick(true);
+  /* Section menu: highlight where you are, keep the current one in view on a phone. */
+  var J = document.getElementById("jump"); if (!J || !window.IntersectionObserver) return;
+  var links = Array.prototype.slice.call(J.querySelectorAll("a")), cur = null;
+  var io = new IntersectionObserver(function (es) { es.forEach(function (en) { if (!en.isIntersecting) return; var a = J.querySelector('a[href="#' + en.target.id + '"]'); if (!a || a === cur) return; if (cur) cur.classList.remove("on"); cur = a; a.classList.add("on"); var inr = J.querySelector(".jump-in"); inr.scrollTo({ left: a.offsetLeft - 16, behavior: "smooth" }); }); }, { rootMargin: "-45% 0px -50% 0px" });
+  links.forEach(function (a) { var t = document.getElementById(a.getAttribute("href").slice(1)); if (t) io.observe(t); });
+})();
+/* Waitlist for the first version. Posts to the form's endpoint; until one is set, it says so instead of pretending. */
+(function () {
+  var f = document.getElementById("wl"); if (!f) return;
+  var who = "Producer", out = document.getElementById("wlDone"), em = document.getElementById("wlEmail");
+  try { var r = localStorage.getItem("sys-role") || ""; who = /^(prod|pm)$/.test(r) ? "Producer" : r && r.indexOf("other:") !== 0 ? "Crew" : who; } catch (e) {}
+  function setWho(v) { who = v; f.querySelectorAll("[data-w]").forEach(function (b) { b.setAttribute("aria-checked", String(b.getAttribute("data-w") === v)); }); }
+  setWho(who);
+  f.addEventListener("click", function (e) { var b = e.target.closest("[data-w]"); if (b) setWho(b.getAttribute("data-w")); });
+  f.addEventListener("submit", function (e) {
+    e.preventDefault(); var v = em.value.trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { out.textContent = "Add your email to join."; em.focus(); return; }
+    if (document.getElementById("wlHp").value) return;
+    var url = f.getAttribute("data-endpoint");
+    if (!url) { out.textContent = "Preview only: the list switches on before launch. Nothing was sent."; return; }
+    var btn = f.querySelector("button[type=submit]"); btn.disabled = true; out.textContent = "Adding you…";
+    var body = new URLSearchParams({ email: v, role: who, page: location.href, at: new Date().toISOString() });
+    fetch(url, { method: "POST", mode: "no-cors", body: body }).then(function () { f.classList.add("in"); out.textContent = "You're on the list. We'll email you when the first version opens."; }, function () { btn.disabled = false; out.textContent = "That didn't go through. Try again?"; });
+  });
 })();
