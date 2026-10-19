@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Systems is the easy back office for UK production companies: advances on award, crew invoices checked, clients approving extras in one tap. All from your phone.">
+<meta name="theme-color" content="#0E0E0D">
+<title>Systems: production admin, made easy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@400;500&family=Martian+Mono:wght@300;400&family=Schibsted+Grotesk:wght@400;500&display=swap">
+<link rel="stylesheet" href="v5.css">
+</head>
+<body>
+
+<header class="nav" id="top">
+  <span class="nav-l"><i class="dot" aria-hidden="true"></i><span class="lab" id="clock">London 00:00</span></span>
+  <a class="mark" href="#top" aria-label="Systems, home"><span>S</span><span style="--g:.08em">y</span><span style="--g:.36em">st</span><span style="--g:.14em">e</span><span style="--g:.42em">ms</span></a>
+  <span class="nav-r"><a class="lab nav-price" href="#prices">Prices</a><a class="as" href="#who" id="asBtn" aria-label="Change who you are"><span class="lab">As</span> <b id="asName">Producer</b></a><a class="pill sm" href="https://elh0.github.io/eltio-studio/preview/systems-app/">Try it</a></span>
+</header>
+
+<main>
+  <!-- 1. HERO: one line, one button, three cards floating in space -->
+  <section class="hero">
+    <div class="hero-copy">
+      <h1 id="h1">Production admin, made easy.</h1>
+      <p class="lede" id="lede">Advances, crew invoices, permits and clients, run from your phone. If you can send a text, you can run Systems.</p>
+      <div class="acts">
+        <a class="pill" href="https://elh0.github.io/eltio-studio/preview/systems-app/">Try it free <span aria-hidden="true">→</span></a>
+        <a class="pill ghost" href="#easy">See how easy <span aria-hidden="true">↓</span></a>
+      </div>
+      <p class="fine" id="fine">For UK production companies and producers. No card, no call, no download.</p>
+      <div class="who" id="who">
+        <span class="lab">Run it as</span>
+        <div class="who-pills" role="radiogroup" aria-label="Your job" id="whoPills"></div>
+        <form class="who-other" id="whoOther" hidden><label class="sr" for="whoIn">Your job</label><input id="whoIn" list="jobs" placeholder="Type your job, like colourist" autocomplete="off" maxlength="40"><button class="pill sm" type="submit">Go <span aria-hidden="true">→</span></button>
+          <datalist id="jobs"><option value="Colourist"><option value="Focus puller"><option value="Steadicam operator"><option value="Best boy"><option value="Rigger"><option value="Props buyer"><option value="Set dresser"><option value="Production designer"><option value="Stylist"><option value="1st AD"><option value="Script supervisor"><option value="Production coordinator"><option value="Line producer"><option value="VFX artist"><option value="Unit driver"><option value="Location marshal"><option value="Boom operator"><option value="Wardrobe assistant"></datalist>
+        </form>
+      </div>
+    </div>
+    <div class="float" id="float" aria-hidden="true">
+      <div class="fl" style="--z:60px;--x:-40px;--y:-150px;--r:-6deg">
+        <div class="fl-top"><span class="lab">Award · 09:12</span><span class="tag">Drafted</span></div>
+        <span class="fl-s">Advance invoice, 50%</span><b>£42,000</b>
+      </div>
+      <div class="fl" style="--z:0px;--x:60px;--y:0px;--r:4deg">
+        <div class="fl-top"><span class="lab">Crew invoices · 32</span><span class="tag ok">30 match</span></div>
+        <span class="fl-s">Into the 7-day run</span><b>£21,480</b>
+      </div>
+      <div class="fl red" style="--z:140px;--x:-20px;--y:150px;--r:-3deg">
+        <div class="fl-top"><span class="lab">On set · 14:31</span><span class="tag paper">Approved</span></div>
+        <span class="fl-s">The canal shot, by the agency</span><b>+£5,220</b>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1b. INBOX: back to back jobs, sorted from your email -->
+  <section class="inbox" id="inbox">
+    <div class="ib-copy">
+      <p class="lab">Your inbox</p>
+      <h2 class="h2">Back to back, still on top.</h2>
+      <p id="ibP">Systems reads your work email and turns it into your diary, timesheets and invoices. Holds, call sheets, changes and payments are sorted as they land. You only see what needs you, with the reply already drafted.</p>
+      <p class="ib-sum" id="ibSum">Every email, sorted</p>
+      <p class="sp-note">Rolling out with the pilot. Nothing is ever sent without you.</p>
+    </div>
+    <div class="card ib" id="ib"><div class="ib-rows" id="ibRows"></div><button class="again" id="ibAgain" type="button">Play it again</button></div>
+  </section>
+
+  <!-- 2. EASY: three taps, one phone that turns as you scroll -->
+  <section class="easy" id="easy">
+    <div class="easy-h">
+      <p class="lab">How easy</p>
+      <h2 class="h2">Three taps. That's the job.</h2>
+    </div>
+    <div class="easy-in">
+      <div class="taps">
+        <article class="tap" data-i="0">
+          <span class="n">01</span>
+          <h3>Forward the award email.</h3>
+          <p>The 50% advance and the balance are drafted, with the dates in your calendar.</p>
+          <div class="mob-screen"></div>
+        </article>
+        <article class="tap" data-i="1">
+          <span class="n">02</span>
+          <h3>Tap wrap.</h3>
+          <p>Once a day, for the whole unit. Every crew member's overtime is worked out.</p>
+          <div class="mob-screen"></div>
+        </article>
+        <article class="tap" data-i="2">
+          <span class="n">03</span>
+          <h3>Approve the pay run.</h3>
+          <p>Every crew invoice is read and checked first. The odd one out gets a polite query.</p>
+          <div class="mob-screen"></div>
+        </article>
+      </div>
+      <div class="stage3d" aria-hidden="true">
+        <div class="phone" id="phone">
+          <div class="ph-face front">
+            <div class="ph-notch"></div>
+            <div class="ph-screens">
+              <div class="scr on">
+                <span class="lab">Inbox · 09:12</span>
+                <p class="scr-mail">Re: Sportswear spot<br><b>We'd love to go with you.</b></p>
+                <div class="scr-card"><span class="lab">Advance, 50%</span><b>£42,000.00</b><span class="scr-q">Due 7 days before the shoot</span></div>
+                <span class="scr-btn">Send the invoice</span>
+              </div>
+              <div class="scr">
+                <span class="lab">Day 2 · call 06:30</span>
+                <div class="scr-big">20:30</div>
+                <span class="scr-q c">Wrap, logged for 32 crew</span>
+                <div class="scr-card"><span class="lab">On overtime</span><b>18 crew</b><span class="scr-q">Worked out at each person's band</span></div>
+                <span class="scr-btn red">Wrap</span>
+              </div>
+              <div class="scr">
+                <span class="lab">Pay run · Friday</span>
+                <div class="scr-row"><span>30 invoices match</span><b>£21,480</b></div>
+                <div class="scr-row amber"><span>2 queries drafted</span><b>−£26.25</b></div>
+                <div class="scr-row q"><span>Paid in 7 days</span><b>APA terms</b></div>
+                <span class="scr-btn">Approve the run</span>
+              </div>
+            </div>
+          </div>
+          <div class="ph-face back"></div>
+          <div class="ph-side l"></div><div class="ph-side r"></div>
+        </div>
+        <div class="shadow"></div>
+      </div>
+    </div>
+    <p class="after">Systems does the rest: the permits counted back, the start packs chased, the balance chased, the rights tracked.</p>
+  </section>
+
+  <!-- 2a. THE DAY, LIVE: the night before to the end-of-day summary, on one clock -->
+  <section class="day" id="day">
+    <div class="day-copy">
+      <p class="lab">On the day · coming next</p>
+      <h2 class="h2">The whole unit, on one clock.</h2>
+      <p id="dayP">The call sheet lands and your countdown, leave-by time and turnaround check are ready before you sleep. On the day the clock runs itself. If the shoot needs to go over, everyone gets the ask at once, and anyone who wants a word gets the producer, not a group chat.</p>
+    </div>
+    <div class="card dy" id="dy">
+      <div class="dy-top"><span class="lab" id="dyLab">Call in</span><b id="dyClock">14:32:10</b><span class="lab" id="dyWhere">Day 1 · Canal, E2 · call 06:30</span>
+        <div class="dy-meter" id="dyMeter" hidden><span class="lab" id="dyMLab">Overtime</span><i><s id="dyBar"></s></i><b id="dyOT">£0</b></div></div>
+      <div class="dy-feed" id="dyFeed"></div>
+      <div class="dy-ask" id="dyAsk" hidden><button class="pill paper" type="button" data-a="in">I'm in</button><button class="pill ghost" type="button" data-a="talk">Talk to the producer</button></div>
+      <button class="pill red" type="button" id="dyPlay">Play the day</button>
+    </div>
+  </section>
+
+  <!-- 2b. BOTH SIDES: one wrap, every crew invoice, the producer's check already done -->
+  <section class="both" id="both">
+    <div class="both-copy">
+      <p class="lab">Same shoot, both sides · coming next</p>
+      <h2 class="h2">One wrap. Everyone's paid.</h2>
+      <p>The AD taps wrap once. Every crew member's timesheet and invoice is drafted from it, and the producer's check already matches, because it's the same record.</p>
+      <p class="both-tag">Wrap Thursday, paid Friday.</p>
+    </div>
+    <div class="card board" id="board">
+      <div class="bd-ad"><div><span class="lab">AD · call 08:00</span><b id="bdTime">20:30</b></div><button class="pill red" type="button" id="bdWrap">Tap wrap</button></div>
+      <div class="bd-rows" id="bdRows"></div>
+      <div class="bd-pay" id="bdPay"><div><span class="lab" id="bdPayLab">Pay run · Friday</span><b id="bdTot">£0</b></div><button class="pill paper" type="button" id="bdApprove" disabled>Approve the run</button></div>
+      <button class="again" id="bdReset" type="button" hidden>Start again</button>
+    </div>
+  </section>
+
+  <!-- 2c. CALL SHEET: one link, always the latest -->
+  <section class="csh" id="callsheet">
+    <div class="csh-copy">
+      <p class="lab">Call sheets · in the pilot</p>
+      <h2 class="h2">One link. Always the latest.</h2>
+      <p>Send your own call sheet as a link by WhatsApp or email. No app, no login. Post V2 and only what changed lights up, and everyone gets a ping.</p>
+      <ul class="ticks-list">
+        <li>Your PM or coordinator posts versions from an edit link. Rates stay hidden.</li>
+        <li>Schedule, risk assessment, maps and start pack live on the job, not in a group chat.</li>
+        <li>Every version is kept, so nobody had the old one. No call sheet? Build one in a minute.</li>
+      </ul>
+    </div>
+    <div class="card cs" id="cs">
+      <div class="cs-top"><span class="lab">Canal promo · day 1</span><div class="cs-v" id="csV" role="tablist" aria-label="Versions"><button type="button" data-v="0">V1</button><button type="button" data-v="1">V2</button><button type="button" data-v="2" aria-selected="true">V3</button></div></div>
+      <div class="cs-rows" id="csRows"></div>
+      <div class="cs-foot"><span id="csSeen">Opened by 29 of 32 crew</span><span class="lab" id="csBy">Posted by the coordinator, 21:14</span></div>
+    </div>
+  </section>
+
+  <!-- 2d. CREW PASSPORT + DIRECTORY -->
+  <section class="pp" id="passport">
+    <div class="card dir" id="dir">
+      <div class="dir-q"><span class="lab">Search crew</span><b>1st AC · Thu 24 Oct</b></div>
+      <div class="dir-rows" id="dirRows"></div>
+      <div class="pp-mini"><span class="lab">Your passport</span><div class="pp-ch"><i>Bank</i><i>UTR</i><i>NI</i><i>Address</i><i>Next of kin</i><i>Vegetarian</i></div><span class="q">Filled in once. On 3 jobs this month.</span></div>
+    </div>
+    <div class="pp-copy">
+      <p class="lab">Crew passport · camera first</p>
+      <h2 class="h2">Fill it in once. Get booked without the 10%.</h2>
+      <p>Bank, UTR, address, NI, dietary and next of kin go in once and carry onto every job. Start packs fill themselves, and nobody asks your dietary again.</p>
+      <p>Choose to be found. Producers see your role, credits and whether you're Available, Pencilled or Booked, never who for. They send a hold, you tap accept. Show your rate card only if you want to.</p>
+      <p class="both-tag">Your diary's in the &pound;4. No 10%, ever.</p>
+      <p class="sp-note">The directory opens with camera first: ACs, loaders and DITs. <a href="https://elh0.github.io/eltio-studio/preview/systems-app/?as=camera">Join as camera &rarr;</a></p>
+    </div>
+  </section>
+
+  <!-- 2e. KEEP THE 10%: commission calculator + an offer landing -->
+  <section class="keep" id="keep">
+    <div class="keep-copy">
+      <p class="lab">For crew · do the maths</p>
+      <h2 class="h2">What does your diary cost you?</h2>
+      <div class="card kc">
+        <label class="slider"><span class="kc-l"><span class="lab">Day rate</span><b id="kcRate">&pound;450</b></span><input type="range" id="kcR" min="150" max="1200" step="10" value="450" aria-label="Day rate"></label>
+        <label class="slider"><span class="kc-l"><span class="lab">Days a year</span><b id="kcDays">120</b></span><input type="range" id="kcD" min="20" max="240" step="5" value="120" aria-label="Days worked a year"></label>
+        <div class="kc-out">
+          <div><span class="lab">A diary service, at 10%</span><b id="kcFee">&pound;5,400</b></div>
+          <div><span class="lab">Systems Crew Pro</span><b>&pound;48</b></div>
+        </div>
+        <p class="kc-keep">You keep <b id="kcKeep">&pound;5,352</b> a year.</p>
+      </div>
+      <p class="sp-note">10% is a typical diary commission. Check your own terms.</p>
+    </div>
+    <div class="card offer" id="offer">
+      <div class="of-n" id="ofN"><span class="lab">Systems · now</span><b>Hold: Thu 24 Oct</b><span>1st AC on a car commercial, 2 days. Call sheet comes the night before.</span>
+        <div class="of-b"><button class="pill red" type="button" id="ofYes">Accept</button><button class="pill" type="button" id="ofNo">Not free</button></div></div>
+      <div class="of-d" id="ofD" aria-live="polite">
+        <span class="lab">Your diary</span>
+        <div class="of-r"><span>Tue 22</span><span class="q">Free</span></div>
+        <div class="of-r"><span>Wed 23</span><span class="q">Pencil: music video</span></div>
+        <div class="of-r" id="ofDay"><span>Thu 24</span><span class="q">Free</span></div>
+        <div class="of-r" id="ofDay2"><span>Fri 25</span><span class="q">Free</span></div>
+      </div>
+      <button class="again" id="ofAgain" type="button" hidden>Play it again</button>
+    </div>
+  </section>
+
+  <!-- 3. THE LIVE THING: drag the wrap -->
+  <section class="wrap">
+    <div class="wrap-copy">
+      <p class="lab">Try it</p>
+      <h2 class="h2" id="wrapH">They wrapped late. What do you owe?</h2>
+      <p id="wrapP">Drag the wrap. This is how every crew invoice is checked, on APA terms, before you pay it.</p>
+    </div>
+    <div class="card live" id="live">
+      <div class="row-top"><span class="lab" id="liveWho">Your gaffer · £450 · APA</span><span class="lab" id="liveTime">Wrap 19:00</span></div>
+      <label class="slider"><span class="sr">Wrap time</span>
+        <input type="range" id="wrap" min="0" max="16" step="1" value="0" aria-valuetext="19:00">
+      </label>
+      <div class="ticks" aria-hidden="true"><span>19:00</span><span>23:00</span><span>03:00</span></div>
+      <div class="lines" id="liveLines"></div>
+      <div class="tot"><span class="lab">Their invoice should say</span><b id="liveTot">£450</b></div>
+    </div>
+  </section>
+
+  <!-- 4. CLIENTS: one tap for them, a record for you -->
+  <section class="clients" id="clients">
+    <div class="cl-copy">
+      <p class="lab">Your clients</p>
+      <h2 class="h2">The client says yes in one tap.</h2>
+      <p>The agency asks for an extra on set. Cost it, send it from your phone, and they approve without a login. It's logged to the budget, so the balance invoice has no surprises.</p>
+      <p class="human"><i></i>Systems drafts. You send. Every message goes out from your own email, in your words.</p>
+    </div>
+    <div class="cr" id="cr">
+      <div class="cr-ask">“Any chance we can grab the canal shot after lunch?”<span class="lab">Agency producer · 14:20</span></div>
+      <div class="cr-body" id="crBody"></div>
+      <button class="pill full" id="crBtn" type="button">Cost it</button>
+      <button class="again" id="crReset" type="button" hidden>Start again</button>
+    </div>
+  </section>
+
+  <!-- 4b. MADE FOR YOU: three things only this job needs -->
+  <section class="spot" id="spot" hidden>
+    <div class="sp-h"><p class="lab" id="spLab">Made for you</p><h2 class="h2" id="spH">Things only you need.</h2></div>
+    <div class="sp-grid" id="spGrid"></div>
+    <p class="sp-note">Rolling out to pilot companies first.</p>
+  </section>
+
+  <!-- 5. EVERYTHING ELSE: one at a time, never a wall -->
+  <section class="more">
+    <div class="more-h">
+      <h2 class="h2">The rest is there when you need it.</h2>
+      <p>Tap one to see what it does.</p>
+    </div>
+    <div class="chips" id="chips" role="tablist" aria-label="Features"></div>
+    <div class="chip-out" id="chipOut" aria-live="polite"></div>
+  </section>
+
+  <!-- 6. TRUST -->
+  <section class="drive">
+    <div class="sheet3d" aria-hidden="true">
+      <div class="sheet">
+        <div class="sheet-bar"><span class="lab">Your Drive · Systems.xlsx</span></div>
+        <div class="sh h"><span>Job</span><span>Amount</span><span>Status</span></div>
+        <div class="sh"><span>Sportswear spot</span><span>£42,000</span><span class="st ok">Paid</span></div>
+        <div class="sh"><span>Canal promo</span><span>£8,400</span><span class="st amber">Chased</span></div>
+        <div class="sh"><span>Music video</span><span>£12,600</span><span class="st">Sent</span></div>
+      </div>
+    </div>
+    <div class="drive-copy">
+      <h2 class="h2">Your books stay in your Drive.</h2>
+      <ul class="ticks-list">
+        <li>One spreadsheet, in your Google Drive. Systems can only open the file it made.</li>
+        <li>Your accountant opens it in Google Sheets.</li>
+        <li>Leave whenever you like. The sheet stays yours.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 6b. PRICES: cheap to start, packs as the work grows -->
+  <section class="price" id="prices">
+    <div class="pr-h">
+      <h2 class="h2">Cheap to start. Add what you need.</h2>
+      <p>Pick a plan, then add packs as the work grows. Monthly, cancel any month.</p>
+    </div>
+    <div class="pr-plans" id="prPlans" role="radiogroup" aria-label="Plans">
+      <button class="plan" data-p="crew" role="radio" aria-checked="false"><span class="lab">Crew</span><b>Free</b><span class="per">overtime and timesheets, every job</span><span class="inc">&pound;4 a month adds inbox sorting, invoices, chasing and your diary. No 10%, ever.</span></button>
+      <button class="plan" data-p="producer" role="radio" aria-checked="false"><span class="lab">Producer <em class="tag-free">First job free</em></span><b>&pound;19</b><span class="per">a month, jobs up to 25 crew</span><span class="inc">Everything in Crew, plus crew lists, start packs, overtime asks and one wrap for everyone.</span></button>
+      <button class="plan" data-p="company" role="radio" aria-checked="false"><span class="lab">Company</span><b>&pound;59</b><span class="per">a month, 5 people, jobs up to 60 crew</span><span class="inc">Everything in Producer, plus the live day, client approvals and rights and usage.</span></button>
+    </div>
+    <div class="pr-build">
+      <p class="lab">Add packs</p>
+      <div class="pr-packs" id="prPacks"></div>
+      <div class="pr-tot"><span class="lab">Your month</span><b id="prTot">&pound;19</b><span id="prDay">about 63p a day</span></div>
+    </div>
+    <p class="pr-fine" id="prFine">Overtime and timesheets are free on every job. One missed hour on a &pound;450 day is &pound;67.50.</p>
+    <ul class="pr-perks">
+      <li><b>First job free</b><span>Producers run one real job, start to wrap, before paying anything.</span></li>
+      <li><b>Pay yearly, two months free</b><span>Crew &pound;40 a year, Producer &pound;190, Company &pound;590.</span></li>
+      <li><b>Bring your producer</b><span>Invite the producer you work for. When they join, you both get a month free.</span></li>
+      <li><b>Bigger shoots</b><span>More people or more crew on a job? &pound;8 a person, or the Big shoots pack. Never a quote, never a call.</span></li>
+    </ul>
+    <p class="sp-note">Pilot prices. Try it free with sample data first, no card needed.</p>
+  </section>
+
+  <!-- 7. QUESTIONS, five only -->
+  <section class="faq" id="faq">
+    <h2 class="h2">Questions.</h2>
+    <div class="qa">
+      <details><summary>Is it really that easy?</summary><p>Yes. Open it, pick Producer, and it walks you round with a sample job. No setup call, no training. If something isn't obvious, that's ours to fix.</p></details>
+      <details><summary>Does it work with Xero?</summary><p>It sits beside Xero, FreeAgent or QuickBooks and does the film part they don't: crew days, overtime, permits, chasing in your name.</p></details>
+      <details><summary>Does it read all my email?</summary><p>No. It reads work email from the productions, agents and suppliers you pick, and you can switch it off any time. It drafts replies. It never sends one for you.</p></details>
+      <details><summary>Do my crew need it?</summary><p>No. Their invoices are read from email and checked either way. The live day works best when the unit is on it, but anyone who isn't just hears the usual way.</p></details>
+      <details><summary>What if I don't want to go over?</summary><p>Tap "Talk to the producer". They're told who wants a word, and the ask stays open until you've spoken. The app saves the walk round the set, not the conversation.</p></details>
+      <details><summary>Can it read my bank statements?</summary><p>If you want. Export a CSV from your bank, drop it in your Systems folder in Google Drive, and payments are matched to invoices. There's no bank login, and you can skip it completely.</p></details>
+      <details><summary>Who sees my hours and overtime?</summary><p>You, and the production you're working for on that job. Nobody else.</p></details>
+      <details><summary>Is it free for crew?</summary><p>Overtime and timesheets are free on every job, for good. If a producer runs the job on Systems, you use everything on it free. &pound;4 a month adds your inbox, invoices, chasing and diary across all your jobs.</p></details>
+      <details><summary>I have a diary service. Can I keep it?</summary><p>Yes. Systems sits alongside it, and holds you take through them still show in your diary. Plenty of people try both for a while and keep whichever earns its money.</p></details>
+      <details><summary>What about my agent?</summary><p>Keep them. Give your agent a link and they manage your holds and offers in Systems, while you see everything as it lands.</p></details>
+      <details><summary>Is it a diary service?</summary><p>It does the diary part: availability, holds, offers and clash warnings. It's a flat &pound;4 a month with no commission, ever. Keep your agent if you have one and give them a link to manage your holds.</p></details>
+      <details><summary>Who can see my passport?</summary><p>Nobody, until you choose to be found. Producers then see your role, credits and whether you're free. Bank, NI, address and dietary are only shared with a job you've accepted.</p></details>
+      <details><summary>Commercials, TV or both?</summary><p>Both. Each job carries its own terms: APA for commercials, Pact/Bectu for drama, or your own flat rate.</p></details>
+      <details><summary>What does it cost?</summary><p>Overtime and timesheets are free for crew. Crew Pro is &pound;4 a month, producers &pound;19, companies &pound;59, with packs on top only if you want them. A producer's first real job is free, and trying it with sample data needs no card.</p></details>
+    </div>
+  </section>
+
+  <section class="close">
+    <h2 class="close-h">All systems go.</h2>
+    <a class="pill paper" href="https://elh0.github.io/eltio-studio/preview/systems-app/">Try it free <span aria-hidden="true">→</span></a>
+    <a class="close-price" href="#prices">Crew from &pound;4 a month. A producer's first job is free.</a>
+  </section>
+</main>
+
+<footer class="foot">
+  <span class="q">Every job sorted. Every day on one clock.</span>
+  <span class="flinks"><a href="https://elh0.github.io/eltio-studio/preview/systems-app/privacy.html">Privacy</a><a href="https://elh0.github.io/eltio-studio/preview/systems-app/terms.html">Terms</a></span>
+</footer>
+
+<script src="v5.js"></script>
+</body>
+</html>
