@@ -545,7 +545,7 @@
     ibKey = key === "other" ? guess(R.n) : key; if (ibSeen) ibPlay();
     $("#ibP").textContent = (key === "prod" || key === "pm") ? "Systems reads your work email and turns it into the job. Awards, crew invoices, client extras and council questions are sorted as they land. You only see what needs you, with the reply already drafted." : "Systems reads your work email and turns it into your diary, timesheets and invoices. Holds, call sheets, changes and payments are sorted as they land. You only see what needs you, with the reply already drafted.";
     var tk = key === "other" ? guess(R.n) : key;
-    $$('a[href*="/app/"]').forEach(function (l) { if (!/\.html/.test(l.getAttribute("href"))) l.href = l.href.split("?")[0] + "?as=" + tk; });
+    $$('a[href^="app/"]').forEach(function (l) { if (!/\.html/.test(l.getAttribute("href"))) l.href = l.href.split("?")[0] + "?as=" + tk; });
     var gk = key === "other" ? guess(R.n) : key, crewH = ["prod", "pm", "dir"].indexOf(gk) < 0, H1 = crewH ? "Your diary. Minus the 10%." : R.h1;
     var h1 = $("#h1"); if (h1.textContent !== H1) { h1.textContent = H1; h1.classList.remove("swap"); void h1.offsetWidth; h1.classList.add("swap"); } h1.classList.toggle("long", H1.length > 26);
     $("#lede").textContent = crewH ? "Holds, offers and availability in one place. Producers find you, you tap accept. " + R.h1 : R.lede; $("#fine").textContent = R.fine;
