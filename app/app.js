@@ -395,7 +395,7 @@ function invoiceDraft(v) {
 
 /* ---------- UI state ---------- */
 var S = { tab: "home" };
-var TABN = { home: "Home", bookings: "Bookings", money: "Money", more: "You" };
+var TABN = { home: "Home", bookings: "Bookings", money: "Money", more: "More" };
 
 function banner(t) { var b = $("banner"); b.textContent = t; b.classList.add("on"); clearTimeout(banner.t); banner.t = setTimeout(function () { b.classList.remove("on"); }, 2600); }
 function openSheet(h) { $("sheet").innerHTML = '<span class="grab"></span>' + h; $("sheet").classList.add("on"); $("shade").classList.add("on"); var f = $("sheet").querySelector("input,button"); if (f && window.innerWidth >= 900) f.focus(); }
@@ -457,7 +457,7 @@ function slowPayers() {
 }
 
 /* ---------- try it as any job: sample data set up for that job, no form ---------- */
-function job() { var k = D && D.settings && D.settings.job; return JOBS.find(function (j) { return j.k === k; }); }
+function job() { var k = D && D.settings && D.settings.job, j = JOBS.find(function (x) { return x.k === k; }), n = D && D.settings && D.settings.jobName; return j && n ? Object.assign({}, j, { n: n, pl: n.toLowerCase().replace(/s$/, "") + "s" }) : j; }
 function startJob(k) {
   var j = JOBS.find(function (x) { return x.k === k; }); if (!j) return false;
   mode = "demo"; D = sample();
@@ -484,7 +484,7 @@ function jobSheet(i) {
 /* ---------- the dashboard you open on: your diary and offers (crew), your shoot (producers) ---------- */
 /* Each sample job's grade on the card, so its rate comes from the card. */
 var JOBGRADE = { camera: "1st AC, focus puller", gaffer: "Gaffer", spark: "Spark", grip: "Grip", sound: "Sound recordist", dit: "DIT", art: "Art director", costume: "Costume designer", hmu: "HMU artist", locations: "Location manager", runner: "Runner", editor: "Editor" };
-var OFFERS = [["o1", 2, "1", "Halde Films", "Sportswear spot", "Found you in the directory", "Maya, producer", "Hi Sam, found you in the directory. One day on a sportswear spot, two cameras on a stage in E2. Could you hold it until Thursday? Happy to send the treatment.", "Canal St Studios, E2", "07:00", "Jonah A.", "Mara Q."], ["o2", 4, "2", "Northlight Films", "Drama, second unit", "Via your agent", "Your agent, for Northlight", "Northlight want you for two days of second unit on their drama in Kent, on Bectu terms. Day two is a night shoot on the seafront. They asked if you can do a recce the Friday before.", "Margate seafront, Kent", "05:30", "Ade O.", "Lena K."]];
+var OFFERS = [["o1", 2, "1", "Halde Films", "Sportswear spot", "Found you in the directory", "Maya, producer", "Hi Sam, found you in the directory. One day on a sportswear spot, on a stage in E2. Could you hold it until Thursday? Happy to send the treatment.", "Canal St Studios, E2", "07:00", "Jonah A.", "Mara Q."], ["o2", 4, "2", "Northlight Films", "Drama, second unit", "Via your agent", "Your agent, for Northlight", "Northlight want you for two days of second unit on their drama in Kent, on Bectu terms. Day two is a night shoot on the seafront. They asked if you can do a recce the Friday before.", "Margate seafront, Kent", "05:30", "Ade O.", "Lena K."]];
 /* The person behind each offer, so it reads like someone asking, not a form. */
 var PEOPLE = {
   o1: { n: "Maya Lindqvist", s: "Maya", ini: "ML", h: 18, role: "Producer, Halde Films", bio: "Produces sportswear and music films, mostly on stage in east London. Small crews, proper lunches, wraps on time.", made: "Fieldwear spring spot, Canal promo, Low Tide 'Haze'", know: "Ana R. and Leon B. have worked with her", pays: "In 9 days, on average" },
@@ -603,7 +603,7 @@ function onboard(asSheet) {
   }).join("") + '</div><div class="acts"><button class="btn wide" data-close>Done</button><button class="lnk" data-onboff>Hide from home</button></div>';
   return '<button class="onb" data-onbopen><span class="onb-t"><span class="part">Set up your dashboard · ' + n + " of " + steps.length + '</span><span>Link Xero and your calendar, match your bank</span></span><span class="bar"><i style="width:' + (n / steps.length * 100).toFixed(0) + '%"></i></span><span class="go" aria-hidden="true">→</span></button>';
 }
-function dashTop() { if (mode !== "demo" || !job()) return onboard(); return isProd() ? shootCard() + onboard() + pjCard() + hotCost() + signCard() + poCard() : diaryCard() + onboard() + jobsCard(); }
+function dashTop() { if (mode !== "demo" || !job()) return onboard(); return isProd() ? shootCard() + onboard() + pjCard() + hotCost() + signCard() + poCard() : deptCard() + diaryCard() + onboard() + jobsCard(); }
 function takeOffer(id, st) {
   var o = (D.offers || []).find(function (x) { return x.id === id; }); if (!o) return;
   var inSheet = $("sheet").classList.contains("on") && $("of-msg"), reply = inSheet ? $("of-msg").value.trim() : "", fl = inSheet ? readFields(o.fields) : JSON.stringify(parseF(o.fields));
@@ -1017,7 +1017,7 @@ function moneyScr() {
 }
 function more() {
   var s = D.settings;
-  return '<div class="top"><span>You</span><span></span></div><h2>' + esc(s.name || "Your account") + "</h2>" +
+  return '<div class="top"><span>You</span><span></span></div><h2>' + esc(s.name || "Your account") + "</h2>" + toolList() +
     '<div class="sum"><div><span class="q">Signed in</span><span>' + (mode === "demo" ? "Sample data, this browser only" : esc(G.email || "Google")) + '</span></div><div><span class="q">Your data</span><span>' + (mode === "demo" ? "Not saved to Drive" : "In your Google Drive") + '</span></div><div><span class="q">Grade</span><span>' + esc(s.grade || "Not picked yet") + '</span></div><div><span class="q">Day rate</span><span>' + money(num(s.rate)) + '</span></div><div><span class="q">Terms</span><span>' + esc(s.terms || 30) + ' days</span></div><div><span class="q">Email</span><span>' + esc(s.mail || "Gmail") + '</span></div><div><span class="q">Agent</span><span>' + (s.hasAgent === "Yes" ? esc(s.agent || "Yes") : "None") + "</span></div></div>" +
     (roleKey() === "Producer" ? '<div class="part">For producers</div><div class="rows"><button class="row" data-features><span>Everything Systems runs</span><span class="q">26</span><span class="sub">Advance invoices, crew checks, permits, rights, deliverables, the books.</span></button><button class="row" data-check><span>Check a crew day</span><span class="q">APA or Bectu</span><span class="sub">See what a crew member is owed and whether their invoice is over or under.</span></button></div>' : "") +
     '<div class="part">Linked</div><div class="rows"><button class="row" data-links=""><span>Accounts, bank and calendar</span><span class="q">' + (linked().length ? linked().length + " linked" : "None yet") + '</span><span class="sub">Xero, QuickBooks or FreeAgent, a CSV from your bank, Google or Apple Calendar.</span></button><button class="row" data-onbon><span>Set up your dashboard</span><span class="q">Checklist</span><span class="sub">Put the setup steps back on your home screen.</span></button></div>' +
@@ -1262,18 +1262,298 @@ function showTour(i) {
 function endTour() { tourT.forEach(function (x) { clearTimeout(x); cancelAnimationFrame(x); }); tourT = []; var el = $("tour"); if (el) el.remove(); flag("eltio-systems-tour-1", "1"); }
 
 /* ---------- render ---------- */
+/* ---------- tools: every feature on the website gets its own page in the sidebar ---------- */
+/* Inbox: work email sorted into the job, the reply drafted. Sample mail only in the preview. */
+var INBOX_P = [
+  { id: "m1", from: "Brightside Agency", subj: "Re: Canal promo, can we add a pickup shot?", job: "Canal promo", sort: "Change request", tag: "amb", body: "Hi Sam, could we grab a pickup of the bridge at golden hour on Friday? Same cast. Thanks, Jess", draft: { to: "jess@brightside.example", subject: "Re: Canal promo, pickup shot", body: "Hi Jess,\n\nHappy to. A half-day pickup on Friday with the same cast and a reduced crew of 8 comes to £1,850 plus VAT. I've sent you a link to approve it in one tap, and once you do it goes on the balance invoice.\n\nThanks,\nSam" } },
+  { id: "m2", from: "Fieldwear accounts", subj: "PO 7731 for the advance", job: "Canal promo", sort: "Money", tag: "ok", body: "Please find PO 7731 attached for the 50% advance.", draft: { to: "accounts@fieldwear.example", subject: "Re: PO 7731 for the advance", body: "Thanks, that's great. The advance invoice with PO 7731 on it is attached, due in 14 days as agreed.\n\nBest,\nSam" } },
+  { id: "m3", from: "Westminster filming office", subj: "Permit FO-2291: approved", job: "Canal promo", sort: "Permits", tag: "ok", body: "Your filming notice for Little Venice towpath, 21 to 22 Oct, is approved.", draft: null },
+  { id: "m4", from: "Priya K.", subj: "Re: 2nd AC hold, Canal promo", job: "Canal promo", sort: "Crew", tag: "", body: "Yes, I'm in for both days. Rate as the card is fine.", draft: { to: "priya@example.com", subject: "Re: 2nd AC hold", body: "Brilliant, thanks Priya. You're confirmed for 21 and 22 Oct. The call sheet link and start pack are on their way.\n\nSam" } },
+  { id: "m5", from: "Lensworks Hire", subj: "Quote: cross-hire zoom, 2 days", job: "Canal promo", sort: "Spend", tag: "", body: "Angénieux 24-290 for two days, £380 plus VAT.", draft: null }
+];
+var INBOX_C = [
+  { id: "m1", from: "Maya, Halde Films", subj: "Hold for Thu 22 Oct?", job: "Sportswear spot", sort: "Diary", tag: "amb", body: "Hi Sam, could we pencil you for Thursday? Two cameras on a stage.", draft: { to: "maya@haldefilms.example", subject: "Re: Hold for Thu 22 Oct", body: "Hi Maya,\n\nHappy to take a first pencil on Thursday 22 Oct at my APA card rate. Let me know when it confirms.\n\nThanks,\nSam" } },
+  { id: "m2", from: "Ironbridge Pictures", subj: "Remittance advice", job: "Car commercial", sort: "Money", tag: "ok", body: "Payment of £1,180.00 has been sent for invoice INV-0031.", draft: null },
+  { id: "m3", from: "Ruth, Lark Crew", subj: "Northlight drama, second unit", job: "Drama, second unit", sort: "Offer", tag: "amb", body: "They want you for two days on Bectu terms. Shall I say yes?", draft: { to: "ruth@larkcrew.example", subject: "Re: Northlight drama", body: "Hi Ruth,\n\nYes please, on Bectu terms for both days. Send the deal memo over when you have it.\n\nThanks,\nSam" } }
+];
+function inbox() { return isProd() ? INBOX_P : INBOX_C; }
+function inboxView() {
+  var M = inbox(), sorts = M.reduce(function (a, m) { a[m.sort] = (a[m.sort] || 0) + 1; return a; }, {});
+  return '<div class="facts">' + Object.keys(sorts).slice(0, 3).map(function (k) { return "<span><i>" + esc(k) + "</i>" + sorts[k] + "</span>"; }).join("") + '</div><div class="rows">' + M.map(function (m) {
+    return '<button class="row" data-mail="' + m.id + '"><span class="mail-t">' + esc(m.from) + '<span class="sub q">' + esc(m.subj) + '</span></span><span class="tag' + (m.tag ? " " + m.tag : "") + '">' + esc(m.sort) + "</span></button>";
+  }).join("") + '</div><p class="q">Systems reads only the mail you label for work, sorts it into the job, and drafts the reply in your Gmail drafts. You press send.</p>';
+}
+function mailSheet(id) {
+  var m = inbox().find(function (x) { return x.id === id; });
+  return '<div class="top"><span class="q">' + esc(m.job) + " · " + esc(m.sort) + '</span><span class="q">' + esc(m.from) + "</span></div><h2>" + esc(m.subj) + '</h2><div class="dm"><p>' + esc(m.body) + "</p></div>" +
+    (m.draft ? '<div class="part">Reply drafted</div><div class="glass" style="padding:14px 16px;white-space:pre-wrap">' + esc(m.draft.body) + '</div><div class="acts"><button class="btn solid" data-maildraft="' + m.id + '">Open the draft</button><button class="btn" data-close>Later</button></div>' : '<p class="q">Filed to ' + esc(m.job) + ". Nothing to reply to.</p>" + '<div class="acts"><button class="btn solid" data-close>Done</button></div>');
+}
+function bankView() { return bankSheet() + '<div class="part">Linked accounts</div>' + linkSheet().replace(/<h2>[^<]*<\/h2>/, ""); }
+function clientsView() {
+  var P = pj();
+  return '<div class="facts"><span><i>Client</i>' + esc(P.client) + '</span><span><i>Brand</i>' + esc(P.brand) + '</span><span><i>Budget</i>' + money(P.budget) + "</span></div>" + extrasSheet().replace(/<div class="top">.*?<\/div>/, "");
+}
+function strip(h) { return h.replace(/^<div class="top">.*?<\/div>/, ""); }
+var TOOLS_P = [
+  { k: "t-inbox", n: "Inbox", g: "Run the job", fn: inboxView, sub: "Mail sorted into the job" },
+  { k: "t-dir", n: "Crew directory", g: "Run the job", fn: function () { return strip(findCrew()); }, sub: "Who's free, and send a hold" },
+  { k: "t-crew", n: "Crew and start packs", g: "Run the job", fn: function () { return strip(crewSheet()); } },
+  { k: "t-cs", n: "Call sheets", g: "Run the job", fn: function () { return strip(callSheet()); } },
+  { k: "t-permits", n: "Permits", g: "Run the job", fn: function () { return strip(permitSheet()); } },
+  { k: "t-sign", n: "Sign-off", g: "Pay", fn: function () { return strip(signSheet()); } },
+  { k: "t-run", n: "Pay run", g: "Pay", fn: function () { return strip(runSheet()); } },
+  { k: "t-bank", n: "Bank and accounts", g: "Pay", fn: bankView },
+  { k: "t-rates", n: "Rate cards", g: "Pay", fn: function () { return strip(rateSheet()); } },
+  { k: "t-clients", n: "Client and extras", g: "Client", fn: clientsView },
+  { k: "t-rights", n: "Rights and usage", g: "Client", fn: function () { return strip(rightsSheet()); } }
+];
+var TOOLS_C = [
+  { k: "t-inbox", n: "Inbox", g: "Your work", fn: inboxView },
+  { k: "t-pass", n: "Passport", g: "Your work", fn: function () { return strip(passportSheet()); } },
+  { k: "t-dir", n: "Crew directory", g: "Your work", fn: function () { return strip(findCrew()); } },
+  { k: "t-cs", n: "Call sheets", g: "Your work", fn: function () { return strip(callSheet()); } },
+  { k: "t-rates", n: "Rate cards", g: "Money", fn: function () { return strip(rateSheet()); } },
+  { k: "t-bank", n: "Bank and receipts", g: "Money", fn: bankView }
+];
+/* ---------- department tools: what each crew job needs, on top of the shared ones ---------- */
+/* Float: the department's petty cash. Snap each receipt, tag it, send production one reconciliation. No company card needed. */
+var FLOATCAT = { art: "Set", costume: "Character", hmu: "Cast", locations: "Location", runner: "Department", pm: "Department" };
+var FLOATSAMPLE = {
+  art: [["Dressing, kitchen set", 42.1, "Set: Kitchen", "Hobbs Antiques", ""], ["Gaffer tape and pins", 18.5, "Set: General", "Screwfix", ""], ["Fruit bowl, hero", 24, "Set: Kitchen", "Borough Market", ""], ["Rug, return by 25 Oct", 120, "Set: Lounge", "Habitat", "return"]],
+  costume: [["Linen shirt, size M", 65, "Character: Jess", "COS", "return"], ["Trainers, two pairs", 180, "Character: Lead runner", "Size?", "return"], ["Dry cleaning", 28, "Character: Mum", "Johnsons", ""], ["Safety pins, tit tape", 9.4, "Character: General", "Boots", ""]],
+  hmu: [["Setting spray", 14, "Cast: Jess", "Boots", ""], ["Hair grips, kirby", 6.5, "Cast: General", "Superdrug", ""], ["Sun cream SPF50", 12, "Cast: All", "Boots", ""]],
+  locations: [["Parking, two vans", 48, "Location: Little Venice", "RingGo", ""], ["Key holder tip", 20, "Location: Flat, NW3", "Cash", ""], ["Cleaning after", 85, "Location: Flat, NW3", "Clean Co", ""]],
+  runner: [["Coffee run, 14", 46.2, "Department: Production", "Pret", ""], ["Taxi, rushes drop", 32, "Department: Post", "Uber", ""], ["Batteries AA", 11, "Department: Camera", "Argos", ""]],
+  pm: [["Float to art", 500, "Department: Art", "Issued", ""], ["Float to costume", 800, "Department: Costume", "Issued", ""]]
+};
+var FLOATAMT = { art: 500, costume: 800, hmu: 200, locations: 300, runner: 150, pm: 1300 };
+function jk() { return (job() || {}).k || ""; }
+function floatData() {
+  var k = jk(); if (!D.float || D.float.k !== k) { D.float = { k: k, issued: FLOATAMT[k] || 300, items: (FLOATSAMPLE[k] || []).map(function (r, i) { return { id: "s" + i, date: iso(addDays(today(), -i)), what: r[0], amt: r[1], cat: r[2], sup: r[3], ret: r[4], photo: true }; }), sent: "" }; }
+  return D.float;
+}
+function floatSpent() { return floatData().items.reduce(function (a, x) { return a + (x.ret === "returned" ? 0 : num(x.amt)); }, 0); }
+function floatView() {
+  var F = floatData(), sp = floatSpent(), left = F.issued - sp, cat = FLOATCAT[jk()] || "Job", rets = F.items.filter(function (x) { return x.ret === "return"; });
+  return '<div class="facts"><span><i>Float</i>' + pounds(F.issued) + '</span><span><i>Spent</i>' + pounds(sp) + '</span><span><i>' + (left < 0 ? "You're owed" : "Left") + "</i>" + pounds(Math.abs(left)) + "</span></div>" +
+    '<span class="bar fbar"><i style="width:' + Math.min(100, sp / F.issued * 100).toFixed(1) + '%"></i></span>' +
+    '<div class="acts"><button class="btn solid" data-fsnap>Snap a receipt</button><button class="btn" data-fsend>Send to production</button><button class="btn" data-ftop>Ask for a top-up</button></div>' +
+    '<div class="part">Receipts · by ' + esc(cat.toLowerCase()) + '</div><div class="rows">' + F.items.map(function (x) {
+      return '<div class="row static"><span class="mail-t">' + esc(x.what) + '<span class="sub q">' + esc(x.cat) + " · " + esc(x.sup) + " · " + nice(x.date) + (x.photo ? " · photo" : "") + '</span></span><span class="tag' + (x.ret === "return" ? " amb" : x.ret === "returned" ? " ok" : "") + '">' + (x.ret === "returned" ? "Refunded " : "") + pounds(num(x.amt)) + "</span>" + (x.ret === "return" ? '<span class="sub"><button class="lnk" data-fret="' + x.id + '">Mark returned and refunded</button></span>' : "") + "</div>";
+    }).join("") + "</div>" +
+    (rets.length ? '<p class="q">' + rets.length + " item" + (rets.length > 1 ? "s" : "") + " to go back. Systems reminds you three days before the shop's return window closes.</p>" : "") +
+    '<p class="q">Every receipt is a photo in your Drive, tagged to the job and the ' + esc(cat.toLowerCase()) + '. Production gets one reconciliation with the photos, not an envelope.' + (F.sent ? " Last sent " + nice(F.sent) + "." : "") + "</p>";
+}
+function snapSheet() {
+  var cat = FLOATCAT[jk()] || "Job";
+  return "<h2>Snap a receipt.</h2><p class=\"q\">Take the photo, say what it was for, and it's on the float.</p>" +
+    '<div class="field"><label for="fs-photo">Receipt photo</label><input id="fs-photo" type="file" accept="image/*" capture="environment"></div>' +
+    '<div class="grid2">' + field("fs-what", "What it was", "", "text", "e.g. Shirt, size M") + field("fs-amt", "Amount (£)", "", "number", "", ' inputmode="decimal"') + "</div>" +
+    '<div class="grid2">' + field("fs-cat", cat, "", "text", cat === "Character" ? "e.g. Jess" : cat === "Set" ? "e.g. Kitchen" : "") + field("fs-sup", "Shop", "", "text", "e.g. COS") + "</div>" +
+    '<div class="field"><label for="fs-ret">Going back?</label><select id="fs-ret"><option value="">No, it\'s kept</option><option value="return">Yes, return it for a refund</option></select></div>' +
+    '<div class="acts"><button class="btn solid wide" data-fsave>Add it to the float</button></div>';
+}
+function floatMail() {
+  var F = floatData(), P = job() || {}, cat = FLOATCAT[jk()] || "Job", by = {};
+  F.items.forEach(function (x) { if (x.ret === "returned") return; by[x.cat] = (by[x.cat] || 0) + num(x.amt); });
+  return { to: "production@example.com", subject: "Float reconciliation, " + (P.n || "my department") + ", " + nice(iso(today())), body: "Hi,\n\nHere's my float reconciliation.\n\nFloat: " + pounds(F.issued) + "\nSpent: " + pounds(floatSpent()) + "\n" + (F.issued - floatSpent() >= 0 ? "Coming back to you: " + pounds(F.issued - floatSpent()) : "Owed to me: " + pounds(floatSpent() - F.issued)) + "\n\nBy " + cat.toLowerCase() + ":\n" + Object.keys(by).map(function (k) { return "  " + k + ": " + pounds(by[k]); }).join("\n") + "\n\nEvery receipt photo is in the shared folder, one line each in the attached sheet.\n\nThanks" };
+}
+function floatCSV() { return "Date,What,Amount," + (FLOATCAT[jk()] || "Job") + ",Shop,Status\n" + floatData().items.map(function (x) { return [x.date, x.what, num(x.amt).toFixed(2), x.cat, x.sup, x.ret || "kept"].map(function (v) { return /[",]/.test(v) ? '"' + String(v).replace(/"/g, '""') + '"' : v; }).join(","); }).join("\n"); }
+
+/* Kit: what you bring, what's hired in, and the day fee that goes on the invoice. */
+var KITSAMPLE = {
+  dop: [["Camera package, Alexa Mini LF", 450, "Yours"], ["Lens set, Ultra Primes", 220, "Yours"], ["Monitor, 17in", 60, "Hired: Lensworks"]],
+  camera: [["Focus kit, Nucleus M", 45, "Yours"], ["AC bag and slate", 15, "Yours"], ["Teradek Bolt", 40, "Hired: Lensworks"]],
+  dit: [["DIT cart", 150, "Yours"], ["Resolve licence", 20, "Yours"], ["Shuttle drives, 4 x 4TB", 60, "Yours"]],
+  gaffer: [["Lighting van, 3.5t", 120, "Yours"], ["Aputure 1200d x2", 90, "Hired: Panalux"], ["Dimmer board", 40, "Yours"]],
+  grip: [["Grip truck", 150, "Yours"], ["Dana dolly", 60, "Yours"], ["Car rig", 180, "Hired: Arri Rental"]],
+  sound: [["Sound cart, 8 channels", 180, "Yours"], ["Radio mics, 6", 90, "Yours"], ["Timecode boxes", 30, "Yours"]],
+  spark: [["Personal tools", 0, "Yours"]]
+};
+function kitData() { var k = jk(); if (!D.kit || D.kit.k !== k) D.kit = { k: k, items: (KITSAMPLE[k] || []).map(function (r, i) { return { id: "k" + i, item: r[0], fee: r[1], src: r[2], on: i < 2 }; }) }; return D.kit; }
+function kitView() {
+  var K = kitData(), day = K.items.filter(function (x) { return x.on; }).reduce(function (a, x) { return a + num(x.fee); }, 0);
+  return '<div class="facts"><span><i>Items</i>' + K.items.length + '</span><span><i>On this job</i>' + K.items.filter(function (x) { return x.on; }).length + '</span><span><i>Kit a day</i>' + money(day) + "</span></div>" +
+    '<div class="rows">' + K.items.map(function (x) { return '<div class="row static"><span class="mail-t">' + esc(x.item) + '<span class="sub q">' + esc(x.src) + " · " + (num(x.fee) ? money(num(x.fee)) + " a day" : "no fee") + '</span></span><button class="btn sm' + (x.on ? " solid" : "") + '" data-kiton="' + x.id + '">' + (x.on ? "On the job" : "Add to job") + "</button></div>"; }).join("") + "</div>" +
+    '<div class="part">Add kit</div><div class="grid2">' + field("kt-item", "Item", "", "text", "e.g. Wireless follow focus") + field("kt-fee", "Day fee (£)", "", "number", "", ' inputmode="decimal"') + '</div><div class="acts"><button class="btn solid" data-kitadd>Add it</button></div>' +
+    '<p class="q">Kit on the job goes on your invoice as its own lines, apart from your labour, and the hired items go on the kit cover sheet with the insurance.</p>';
+}
+
+/* The three things made for each job, as pages you can add to. */
+function madeView(i) {
+  var j = job(), f = j.f[i], k = j.k + i; D.made = D.made || {}; var mine = D.made[k] || [];
+  return '<p class="lede-s">' + esc(f[1]) + '</p><div class="rows">' + f[2].concat(mine).map(function (r) { return '<div class="row static"><span>' + esc(r[0]) + '</span><span class="tag' + (r[2] === "amber" ? " amb" : r[2] === "q" ? "" : " ok") + '">' + esc(r[1]) + "</span></div>"; }).join("") + "</div>" +
+    '<div class="part">Add one</div><div class="grid2">' + field("md-a", "What", "", "text") + field("md-b", "Detail", "", "text") + '</div><div class="acts"><button class="btn solid" data-madeadd="' + i + '">Add it</button></div>';
+}
+function deptTools() {
+  var j = job(), k = jk(), out = []; if (!j) return out;
+  var g = "For " + j.pl;
+  if (FLOATSAMPLE[k] && k !== "pm") out.push({ k: "t-float", n: "Float and receipts", g: g, fn: floatView });
+  if (KITSAMPLE[k]) out.push({ k: "t-kit", n: k === "sound" ? "Sound package" : k === "dit" ? "Cart and drives" : "Kit and day fees", g: g, fn: kitView });
+  j.f.forEach(function (f, i) { out.push({ k: "t-made" + i, n: f[0].replace(/\.$/, ""), g: g, fn: function () { return madeView(i); } }); });
+  return out;
+}
+function deptCard() {
+  var k = jk();
+  if (FLOATSAMPLE[k] && k !== "pm") { var F = floatData(), sp = floatSpent(), r = F.items.filter(function (x) { return x.ret === "return"; }).length;
+    return '<div class="diary"><div class="edge"><span class="part">Your float</span><span class="part">' + F.items.length + ' receipts</span></div><div class="facts"><span><i>Left</i>' + pounds(Math.max(0, F.issued - sp)) + '</span><span><i>Spent</i>' + pounds(sp) + '</span><span><i>To return</i>' + r + '</span></div><div class="acts"><button class="btn solid sm" data-fsnap>Snap a receipt</button><button class="btn sm" data-tab="t-float">See the float</button></div></div>'; }
+  if (KITSAMPLE[k]) { var K = kitData(), on = K.items.filter(function (x) { return x.on; });
+    return '<div class="diary"><div class="edge"><span class="part">Your kit</span><span class="part">' + on.length + ' on this job</span></div><div class="facts"><span><i>Kit a day</i>' + money(on.reduce(function (a, x) { return a + num(x.fee); }, 0)) + '</span><span><i>Items</i>' + K.items.length + '</span><span><i>Hired in</i>' + K.items.filter(function (x) { return /^Hired/.test(x.src); }).length + '</span></div><div class="acts"><button class="btn sm" data-tab="t-kit">See your kit</button></div></div>'; }
+  return "";
+}
+function deptClick(b) {
+  var d = b.dataset;
+  if (b.hasAttribute("data-fsnap")) { openSheet(snapSheet()); return true; }
+  if (b.hasAttribute("data-fsave")) {
+    var amt = num(val("fs-amt")), what = val("fs-what"); if (!amt || !what) { banner("Add what it was and the amount."); return true; }
+    var f = $("fs-photo") && $("fs-photo").files[0], cat = FLOATCAT[jk()] || "Job";
+    floatData().items.unshift({ id: uid(), date: iso(today()), what: what, amt: amt, cat: cat + ": " + (val("fs-cat") || "General"), sup: val("fs-sup") || "Shop", ret: val("fs-ret"), photo: !!f });
+    demoSave(); closeSheet(); render(); banner("On the float. " + pounds(Math.max(0, floatData().issued - floatSpent())) + " left."); return true;
+  }
+  if (d.fret) { var x = floatData().items.find(function (y) { return y.id === d.fret; }); if (x) { x.ret = "returned"; demoSave(); render(); banner("Refund logged. Back on the float."); } return true; }
+  if (b.hasAttribute("data-fsend")) { DRAFT = floatMail(); saveFile(stamp() + "-float.csv", "text/csv", floatCSV()); floatData().sent = iso(today()); demoSave(); openSheet(draftSheet(DRAFT, "Reconciliation drafted")); return true; }
+  if (b.hasAttribute("data-ftop")) { var F = floatData(); DRAFT = { to: "production@example.com", subject: "Float top-up, " + ((job() || {}).n || ""), body: "Hi,\n\nI've spent " + pounds(floatSpent()) + " of my " + pounds(F.issued) + " float, receipts attached. Could you top it up by " + pounds(Math.max(100, Math.ceil(floatSpent() / 50) * 50)) + "?\n\nThanks" }; openSheet(draftSheet(DRAFT, "Top-up drafted")); return true; }
+  if (d.kiton) { var it = kitData().items.find(function (y) { return y.id === d.kiton; }); if (it) { it.on = !it.on; demoSave(); render(); } return true; }
+  if (b.hasAttribute("data-kitadd")) { var n = val("kt-item"); if (!n) { banner("Add the item."); return true; } kitData().items.push({ id: uid(), item: n, fee: num(val("kt-fee")), src: "Yours", on: true }); demoSave(); render(); banner("Added, and on this job."); return true; }
+  if (d.madeadd) { var a = val("md-a"); if (!a) { banner("Add what it is."); return true; } var key = jk() + d.madeadd; D.made = D.made || {}; (D.made[key] = D.made[key] || []).push([a, val("md-b") || "Added", ""]); demoSave(); render(); banner("Added."); return true; }
+  return false;
+}
+/* ---------- make it yours: your own pages, and a sidebar you can pin and hide ---------- */
+var PAGE_TPL = {
+  costume: [["Fittings", "Cast, Date, Size, Notes"], ["Continuity", "Scene, Character, Look, Photo"]],
+  art: [["Props list", "Prop, Scene, Source, Status"], ["Set dressing", "Set, Item, Hired from, Return by"]],
+  hmu: [["Looks by cast", "Cast, Scene, Look, Products"], ["Allergies", "Cast, Allergy, Notes"]],
+  camera: [["Camera reports", "Roll, Scene, Take, Lens, Notes"], ["Lens list", "Lens, Serial, Owner"]],
+  dop: [["Shot list", "Scene, Shot, Lens, Notes"], ["Lighting plots", "Scene, Units, Power, Notes"]],
+  dit: [["Media log", "Card, Camera, Size, Backed up"], ["Drive register", "Drive, Size, Job, With"]],
+  gaffer: [["Power plan", "Location, Supply, Load, Notes"], ["Team hours", "Name, Call, Wrap, Notes"]],
+  spark: [["Rig log", "Location, Units, Day, Notes"]], grip: [["Rig log", "Rig, Location, Day, Notes"]],
+  sound: [["Sound reports", "Roll, Scene, Take, Tracks, Notes"], ["Radio mics", "Cast, Pack, Channel"]],
+  editor: [["Review notes", "Round, Timecode, Note, Done"], ["Deliverables", "Version, Format, Due, Sent"]],
+  locations: [["Recce log", "Location, Contact, Fee, Photos"], ["Neighbour letters", "Address, Sent, Reply"]],
+  runner: [["Errands", "What, For, Cost, Done"]],
+  prod: [["Pitch tracker", "Brand, Agency, Treatment due, Status"], ["Supplier list", "Supplier, Contact, Terms"]],
+  pm: [["Crew contacts", "Name, Role, Phone, Dietary"], ["Risk checks", "Location, Risk, Owner, Done"]],
+  dir: [["Treatments", "Brand, Due, Status, Fee"]]
+};
+function pages() { return D.custom || (D.custom = []); }
+function layout() { return D.layout || (D.layout = { hide: [], pin: [] }); }
+function customTools() { return pages().map(function (p) { return { k: "t-c-" + p.id, n: p.name, g: "Your pages", fn: function () { return customView(p.id); }, mine: true }; }); }
+function shaped(list) {
+  var L = layout(), out = list.filter(function (t) { return L.hide.indexOf(t.k) < 0; }), pin = [];
+  L.pin.forEach(function (k) { var t = out.find(function (x) { return x.k === k; }); if (t) pin.push(Object.assign({}, t, { g: "Pinned" })); });
+  return pin.concat(out.filter(function (t) { return L.pin.indexOf(t.k) < 0; }));
+}
+function customView(id) {
+  var p = pages().find(function (x) { return x.id === id; }); if (!p) return "";
+  return '<div class="rows">' + (p.rows.length ? p.rows.map(function (r, ri) { return '<div class="row static cp-r"><span class="mail-t">' + esc(r[0] || "") + '<span class="sub q">' + p.cols.slice(1).map(function (c, i) { return r[i + 1] ? esc(c) + ": " + esc(r[i + 1]) : ""; }).filter(Boolean).join(" · ") + '</span></span><button class="lnk" data-cpdel="' + id + ":" + ri + '" aria-label="Remove">Remove</button></div>'; }).join("") : '<div class="row static"><span class="q">Nothing here yet. Add the first one below.</span></div>') + "</div>" +
+    '<div class="part">Add one</div><div class="grid2">' + p.cols.map(function (c, i) { return field("cp-" + i, esc(c), "", /date|due|when|by$/i.test(c) ? "date" : "text"); }).join("") + '</div><div class="acts"><button class="btn solid" data-cpadd="' + id + '">Add it</button></div>' +
+    '<p class="q">' + p.cols.length + " columns · " + p.rows.length + ' rows. It\'s a tab in your sheet, so you can sort, filter and share it there too. <button class="lnk" data-cpkill="' + id + '">Delete this page</button></p>';
+}
+/* Describe it: plain words in, a page out. The preview reads the words for the usual things; the pilot does it properly. */
+var DESC_COLS = [[/\b(date|day|when|due|by)\b/, "Date"], [/\b(cost|price|£|amount|fee|spend|paid)\b/, "Cost"], [/\b(who|person|name|crew|contact)\b/, "Who"], [/\b(actor|actors|cast|talent|character)\b/, "Cast"], [/\b(size|sizes|measure)/, "Size"], [/\b(scene|scenes|shot)\b/, "Scene"], [/\b(location|address|where|place)\b/, "Location"], [/\b(photo|picture|image)/, "Photo"], [/\b(status|done|tick|approved|sent|returned)\b/, "Status"], [/\b(phone|email|number)\b/, "Contact"], [/\b(supplier|shop|hire|vendor)\b/, "Supplier"], [/\b(time|call|wrap|hours?)\b/, "Time"], [/\b(serial|kit|item|prop|props)\b/, "Item"]];
+function fromWords(t) {
+  var w = t.toLowerCase(), cols = [];
+  DESC_COLS.forEach(function (c) { if (c[0].test(w) && cols.indexOf(c[1]) < 0) cols.push(c[1]); });
+  var m = w.match(/(?:track|log|list|keep|record|note|tick off|manage|plan)\s+(?:a\s+|an\s+|list\s+|log\s+|record\s+|of\s+|all\s+|my\s+|the\s+|our\s+|each\s+|every\s+)*([a-z][a-z \-]{2,24}?)(?=\s+(?:for|with|by|on|and|per|that|so|from|to|in)\b|[.,]|$)/), name = m ? m[1] : (w.split(/\s+/).filter(function (x) { return x.length > 3; })[0] || "My page");
+  name = name.trim(); name = name.charAt(0).toUpperCase() + name.slice(1);
+  if (cols.indexOf("Item") < 0 && cols.indexOf("Who") < 0 && cols.indexOf("Cast") < 0) cols.unshift(name.replace(/s$/, ""));
+  var lead = ["Cast", "Who", "Item"].find(function (c) { return cols.indexOf(c) > 0; }); if (lead) { cols.splice(cols.indexOf(lead), 1); cols.unshift(lead); }
+  if (cols.indexOf("Notes") < 0) cols.push("Notes");
+  return { name: name.slice(0, 28), cols: cols.slice(0, 6) };
+}
+function addPageSheet() {
+  var T = PAGE_TPL[jk()] || [["Checklist", "Item, Who, Done"]];
+  return "<h2>Add your own page.</h2><p class=\"q\">Anything Systems doesn't do yet. Pick a start or make your own.</p>" +
+    '<div class="part">Made for ' + esc((job() || {}).pl || "you") + '</div><div class="pills">' + T.concat([["Checklist", "Item, Who, Done"]]).filter(function (x, i, a) { return a.findIndex(function (y) { return y[0] === x[0]; }) === i; }).map(function (t) { return '<button class="pill" data-cptpl="' + esc(t[0]) + "|" + esc(t[1]) + '">' + esc(t[0]) + "</button>"; }).join("") + "</div>" +
+    '<div class="field"><label for="cp-desc">Or say what you need</label><textarea id="cp-desc" rows="2" placeholder="e.g. Track fittings for each actor with sizes, date and a photo"></textarea></div><div class="acts"><button class="btn" data-cpdesc>Build it from that</button></div>' +
+    field("cp-name", "Page name", "", "text", "e.g. Fittings") + field("cp-cols", "Columns, with commas", "", "text", "e.g. Cast, Date, Size, Notes") +
+    '<div class="acts"><button class="btn solid wide" data-cpmake>Add the page</button></div>';
+}
+function customiseSheet() {
+  var L = layout(), all = (isProd() ? TOOLS_P : TOOLS_C).concat(deptTools()).concat(customTools());
+  return "<h2>Your sidebar.</h2><p class=\"q\">Pin what you use every day. Hide what you don't. Nothing is deleted.</p><div class=\"rows\">" + all.map(function (t) {
+    var pin = L.pin.indexOf(t.k) >= 0, hid = L.hide.indexOf(t.k) >= 0;
+    return '<div class="row static cz-r"><span class="mail-t">' + esc(t.n) + '<span class="sub q">' + esc(t.g) + '</span></span><span class="cz-a"><button class="btn sm' + (pin ? " solid" : "") + '" data-czpin="' + t.k + '">' + (pin ? "Pinned" : "Pin") + '</button><button class="btn sm' + (hid ? " solid" : "") + '" data-czhide="' + t.k + '">' + (hid ? "Hidden" : "Hide") + "</button></span></div>";
+  }).join("") + '</div><div class="acts"><button class="btn" data-addpage>Add your own page</button><button class="btn solid" data-close>Done</button></div>';
+}
+function customClick(b) {
+  var d = b.dataset;
+  if (b.hasAttribute("data-addpage")) { openSheet(addPageSheet()); return true; }
+  if (b.hasAttribute("data-customise")) { openSheet(customiseSheet()); return true; }
+  if (d.cptpl) { var t = d.cptpl.split("|"); $("cp-name").value = t[0]; $("cp-cols").value = t[1]; return true; }
+  if (b.hasAttribute("data-cpdesc")) { var t0 = val("cp-desc"); if (!t0) { banner("Say what the page is for."); return true; } var g = fromWords(t0); $("cp-name").value = g.name; $("cp-cols").value = g.cols.join(", "); banner("Here's a start. Change anything, then add it."); return true; }
+  if (b.hasAttribute("data-cpmake")) {
+    var n = val("cp-name"), cols = val("cp-cols").split(",").map(function (x) { return x.trim(); }).filter(Boolean).slice(0, 6);
+    if (!n) { banner("Give the page a name."); return true; } if (!cols.length) cols = ["What", "Notes"];
+    var p = { id: uid(), name: n.slice(0, 28), cols: cols, rows: [] }; pages().push(p); demoSave(); closeSheet(); S.tab = "t-c-" + p.id; render(); window.scrollTo(0, 0); banner(p.name + " added to your sidebar."); return true;
+  }
+  if (d.cpadd) { var p2 = pages().find(function (x) { return x.id === d.cpadd; }), r = p2.cols.map(function (c, i) { return val("cp-" + i); }); if (!r.some(Boolean)) { banner("Fill in at least one."); return true; } p2.rows.unshift(r); demoSave(); render(); banner("Added."); return true; }
+  if (d.cpdel) { var a = d.cpdel.split(":"), p3 = pages().find(function (x) { return x.id === a[0]; }); p3.rows.splice(+a[1], 1); demoSave(); render(); return true; }
+  if (d.cpkill) { D.custom = pages().filter(function (x) { return x.id !== d.cpkill; }); demoSave(); S.tab = "home"; render(); banner("Page deleted."); return true; }
+  if (d.czpin || d.czhide) {
+    var L = layout(), k = d.czpin || d.czhide, arr = d.czpin ? L.pin : L.hide, i = arr.indexOf(k);
+    if (i >= 0) arr.splice(i, 1); else { arr.push(k); var other = d.czpin ? L.hide : L.pin, j = other.indexOf(k); if (j >= 0) other.splice(j, 1); }
+    demoSave(); render(); openSheet(customiseSheet()); return true;
+  }
+  return false;
+}
+function tools() { return shaped((isProd() ? TOOLS_P : TOOLS_C).concat(deptTools()).concat(customTools())); }
+function tool(k0) { return (isProd() ? TOOLS_P : TOOLS_C).concat(deptTools()).concat(customTools()).find(function (t) { return t.k === k0; }); }
+function toolView() {
+  var t = tool(S.tab); if (!t) { S.tab = "home"; return home(); }
+  return '<div class="hd"><div class="hd-l"><span class="part">' + esc(t.g) + "</span><h1>" + esc(t.n) + '.</h1></div><span class="tag">Preview</span></div><div class="tool">' + t.fn() + "</div>";
+}
+function sideTools() {
+  var gs = []; tools().forEach(function (t) { if (gs.indexOf(t.g) < 0) gs.push(t.g); });
+  return gs.map(function (g) { return '<div class="side-g">' + esc(g) + "</div>" + tools().filter(function (t) { return t.g === g; }).map(function (t) { return '<button data-tab="' + t.k + '" class="' + (S.tab === t.k ? "on" : "") + '"><span>' + esc(t.n) + '</span><span class="q"></span></button>'; }).join(""); }).join("") + '<div class="side-g">Make it yours</div><button data-addpage><span>Add your own page</span><span class="q">+</span></button><button data-customise><span>Pin and hide pages</span><span class="q"></span></button>';
+}
+function toolList() {
+  var gs = []; tools().forEach(function (t) { if (gs.indexOf(t.g) < 0) gs.push(t.g); });
+  return '<div class="tool-list">' + gs.map(function (g) { return '<div class="part">' + esc(g) + '</div><div class="rows">' + tools().filter(function (t) { return t.g === g; }).map(function (t) { return '<button class="row" data-tab="' + t.k + '"><span>' + esc(t.n) + '</span><span class="q">→</span></button>'; }).join("") + "</div>"; }).join("") + '<div class="part">Make it yours</div><div class="rows"><button class="row" data-addpage><span>Add your own page</span><span class="q">+</span></button><button class="row" data-customise><span>Pin and hide pages</span><span class="q">→</span></button></div></div>';
+}
+/* A sheet that re-opens the page it was opened from redraws the page instead. */
+var openSheet0 = openSheet;
+openSheet = function (h) { var t = tool(S.tab); if (t && $("sheet") && !$("sheet").classList.contains("on")) { try { if (h === t.fn() || strip(h) === t.fn() || h === findCrew() && t.k === "t-dir") { render(); return; } } catch (e) {} } openSheet0(h); };
+function toolClick(b) {
+  var d = b.dataset;
+  if (d.mail) { openSheet(mailSheet(d.mail)); return true; }
+  if (d.maildraft) { var m = inbox().find(function (x) { return x.id === d.maildraft; }); DRAFT = m.draft; openSheet(draftSheet(DRAFT, "Reply drafted")); return true; }
+  return false;
+}
 var VIEWS = { home: home, bookings: bookings, money: moneyScr, more: more };
 /* Trying it with sample data: always show the way back to the site and the waitlist. */
 function siteUrl() { return /\/preview\/systems-app\//.test(location.pathname) ? "../systems-site-v5/" : /^https?:/.test(location.protocol) && location.hostname !== "localhost" && !/claude/.test(location.hostname) ? "/" : "https://eltio.systems/"; }
-function demoBar() { return '<div class="demobar"><span class="part">Sample data · nothing is saved</span><span class="db-l"><button class="lnk" data-switchjob>Switch job</button><a class="lnk" href="' + siteUrl() + '">Back to the site</a><a class="btn sm solid" href="' + siteUrl() + '#waitlist">Join the waitlist</a></span></div>'; }
+/* Switch job: a menu under the button, every job grouped by department, and any other job typed in. */
+var JGROUPS = [["Production", ["prod", "pm", "dir"]], ["Camera", ["dop", "camera", "dit"]], ["Lighting and grip", ["gaffer", "spark", "grip"]], ["Sound and post", ["sound", "editor"]], ["Art, costume, hair and make-up", ["art", "costume", "hmu"]], ["Locations and runners", ["locations", "runner"]]];
+var JGUESS = [[/line producer|producer|exec/, "prod"], [/production (manager|coord)|coordinator|\bpm\b|\bad\b|assistant director|1st ad|first ad|script sup/, "pm"], [/dop|\bdp\b|cinematographer|director of photography|camera op|steadicam|operator/, "dop"], [/director/, "dir"], [/gaffer|best boy/, "gaffer"], [/spark|electric|rigger|lighting/, "spark"], [/grip|dolly|crane/, "grip"], [/focus|\bac\b|camera ass|clapper|loader|camera/, "camera"], [/\bdit\b|data|media/, "dit"], [/sound|boom|mixer|audio/, "sound"], [/art|design|set dress|props|buyer|construct|scenic|graphic/, "art"], [/costume|wardrobe|stylist|dresser/, "costume"], [/make|hair|hmu|mua|prosthetic/, "hmu"], [/location|unit manager|marshal/, "locations"], [/edit|colou?r|vfx|grade|post|online|motion|anim/, "editor"], [/runner|\bpa\b|assistant|driver/, "runner"]];
+function jguess(t) { t = t.toLowerCase(); for (var i = 0; i < JGUESS.length; i++) if (JGUESS[i][0].test(t)) return JGUESS[i][1]; return "runner"; }
+function jobMenu() {
+  var cur = D && D.settings ? D.settings.job : "", nm = D && D.settings ? D.settings.jobName : "";
+  return '<div class="jmenu" id="jmenu" role="menu"><div class="jm-in">' + JGROUPS.map(function (g) {
+    return '<div class="jm-g"><span class="part">' + esc(g[0]) + "</span>" + g[1].map(function (k) { var j = JOBS.find(function (x) { return x.k === k; }); return j ? '<button role="menuitem" data-job="' + k + '" class="' + (k === cur && !nm ? "on" : "") + '">' + esc(j.n) + "</button>" : ""; }).join("") + "</div>";
+  }).join("") + '</div><form class="jm-other" id="jmOther"><label class="part" for="jmIn">Not here? Type your job</label><div class="jm-row"><input id="jmIn" list="jmList" placeholder="e.g. Props buyer, colourist" autocomplete="off" maxlength="32" value="' + esc(nm || "") + '"><button class="btn solid sm" type="submit">Build it</button></div><datalist id="jmList">' + ["Focus puller", "Steadicam operator", "Best boy", "Rigger", "Props buyer", "Set dresser", "Production designer", "Wardrobe supervisor", "Prosthetics artist", "Boom operator", "Colourist", "VFX artist", "Script supervisor", "1st AD", "Unit manager", "Driver"].map(function (x) { return '<option value="' + x + '">'; }).join("") + "</datalist></form></div>";
+}
+function toggleJobMenu(btn) {
+  var m = $("jmenu"); if (m) { m.remove(); return; }
+  var bar = btn.closest(".demobar"); if (!bar) return; bar.insertAdjacentHTML("beforeend", jobMenu());
+  var f = $("jmOther"); f.addEventListener("submit", function (e) { e.preventDefault(); var t = val("jmIn"); if (!t) return; customJob(t); });
+}
+function customJob(t) {
+  var k = jguess(t), nm = t.trim().replace(/\s+/g, " ").slice(0, 32); nm = nm.charAt(0).toUpperCase() + nm.slice(1);
+  if (!startJob(k)) return; D.settings.jobName = nm; demoSave(); render(); banner("Built for a " + nm.toLowerCase() + ", from the " + JOBS.find(function (x) { return x.k === k; }).n.toLowerCase() + " tools.");
+}
+document.addEventListener("click", function (e) { var m = $("jmenu"); if (m && !m.contains(e.target) && !e.target.closest("[data-switchjob]")) m.remove(); });
+document.addEventListener("keydown", function (e) { if (e.key === "Escape" && $("jmenu")) $("jmenu").remove(); });
+function demoBar() { return '<div class="demobar"><span class="part">Sample data · nothing is saved</span><span class="db-l"><button class="lnk jm-btn" data-switchjob aria-haspopup="menu">' + (job() ? "As " + esc(job().n.toLowerCase()) : "Switch job") + ' <span aria-hidden="true">▾</span></button><a class="lnk" href="' + siteUrl() + '">Back to the site</a><a class="btn sm solid" href="' + siteUrl() + '#waitlist">Join the waitlist</a></span></div>'; }
 function render() {
   paintSky();
   var signedIn = !!mode, ready = signedIn && D.settings && D.settings.name && (mode === "demo" || G.sheetId);
-  $("main").innerHTML = (mode === "demo" && ready ? demoBar() : "") + (!signedIn ? welcome() : !ready ? setup() : VIEWS[S.tab]());
+  $("main").innerHTML = (mode === "demo" && ready ? demoBar() : "") + (!signedIn ? welcome() : !ready ? setup() : (VIEWS[S.tab] || toolView)());
   if (ready && !flag("eltio-systems-tour-1") && !$("tour")) showTour(0);
   var n = ready ? todo().length : 0;
-  $("side").innerHTML = ready ? '<div class="who"><span>' + esc(D.settings.trading || D.settings.name) + '</span><span class="q">Eltio Systems</span></div>' + Object.keys(TABN).map(function (t) { return '<button data-tab="' + t + '" class="' + (S.tab === t ? "on" : "") + '"><span>' + TABN[t] + '</span><span class="q">' + (t === "home" && n ? n : "") + "</span></button>"; }).join("") + '<button class="btn solid add" data-addbooking>Add a booking</button>' : "";
-  $("tabs").innerHTML = ready ? '<nav class="tabs" aria-label="Sections">' + Object.keys(TABN).map(function (t) { return '<button data-tab="' + t + '" class="' + (S.tab === t ? "on" : "") + '"><i></i>' + TABN[t] + (t === "home" && n ? '<span class="badge">' + n + "</span>" : "") + "</button>"; }).join("") + '</nav><button class="fab" data-addbooking aria-label="Add a booking">+</button>' : "";
+  $("side").innerHTML = ready ? '<div class="who"><span>' + esc(D.settings.trading || D.settings.name) + '</span><span class="q">Eltio Systems</span></div>' + Object.keys(TABN).map(function (t) { return '<button data-tab="' + t + '" class="' + (S.tab === t ? "on" : "") + '"><span>' + TABN[t] + '</span><span class="q">' + (t === "home" && n ? n : "") + "</span></button>"; }).join("") + sideTools() + '<button class="btn solid add" data-addbooking>Add a booking</button>' : "";
+  $("tabs").innerHTML = ready ? '<nav class="tabs" aria-label="Sections">' + Object.keys(TABN).map(function (t) { return '<button data-tab="' + t + '" class="' + (S.tab === t || t === "more" && /^t-/.test(S.tab) ? "on" : "") + '"><i></i>' + TABN[t] + (t === "home" && n ? '<span class="badge">' + n + "</span>" : "") + "</button>"; }).join("") + '</nav><button class="fab" data-addbooking aria-label="Add a booking">+</button>' : "";
 }
 
 /* ---------- start-up ---------- */
@@ -1302,7 +1582,7 @@ document.addEventListener("click", function (e) {
   var d = b.dataset;
   if (d.pick) { var g = b.parentNode; g.querySelectorAll(".pill").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); if (d.pick === "hasAgent") { var f = $("agentf"); if (f) f.hidden = d.v !== "Yes"; } if (d.pick === "terms") { var ef = $("extraf"), tn = $("termsnote"); if (ef) ef.hidden = d.v !== "TV drama"; if (tn) tn.textContent = TERMN[d.v]; swapCard("b-grade", cardOf(d.v)); } if (d.pick === "cterms") swapCard("c-grade", cardOf(d.v)); if (d.pick === "work") swapCard("s-grade", cardOf(d.v)); if (d.pick === "rcard") { openSheet(rateSheet(d.v)); return; } if (d.pick === "pjterms") { pj().terms = d.v; pjSave(); openSheet(crewSheet()); render(); return; } liveCalc(); return; }
   if (b.hasAttribute("data-close")) { closeSheet(); return; }
-  if (pjClick(b) || bankClick(b)) return;
+  if (pjClick(b) || bankClick(b) || toolClick(b) || deptClick(b) || customClick(b)) return;
   if (b.hasAttribute("data-tournext")) { if (tourI < TOUR.length - 1) showTour(tourI + 1); else endTour(); return; }
   if (b.hasAttribute("data-tourback")) { showTour(Math.max(0, tourI - 1)); return; }
   if (b.hasAttribute("data-tourend")) { endTour(); return; }
@@ -1312,7 +1592,7 @@ document.addEventListener("click", function (e) {
   if (b.hasAttribute("data-starteroff")) { flag("eltio-systems-starter-off", "1"); render(); return; }
   if (b.hasAttribute("data-howphone")) { flag("eltio-systems-phone", "1"); openSheet('<h2>Put it on your home screen</h2><div class="sum"><div><span class="q">iPhone</span><span>Safari, Share, Add to Home Screen</span></div><div><span class="q">Android</span><span>Chrome menu, Install app</span></div></div><p class="q">Then sign in with the same Google account on your laptop. Both read the same sheet, so they always match.</p><div class="acts"><button class="btn solid wide" data-close>Done</button></div>'); render(); return; }
   if (d.job) { startJob(d.job); return; }
-  if (d.jobf) { openSheet(jobSheet(+d.jobf)); return; }
+  if (d.jobf) { S.tab = "t-made" + d.jobf; closeSheet(); render(); window.scrollTo(0, 0); return; }
   if (b.hasAttribute("data-callsheet")) { openSheet(callSheet()); return; }
   if (b.hasAttribute("data-findcrew")) { openSheet(findCrew()); return; }
   if (d.export === "acct") { exportAccountant(); banner("Saved: this tax year's invoices, expenses and mileage, ready for your accountant."); return; }
@@ -1354,7 +1634,7 @@ document.addEventListener("click", function (e) {
   if (b.hasAttribute("data-postv")) { closeSheet(); banner("V4 posted. Everyone gets a ping with what changed."); return; }
   if (b.hasAttribute("data-editlink")) { closeSheet(); banner("Edit link ready for your PM. Rates and budget stay hidden."); return; }
   if (b.hasAttribute("data-confirmed")) { banner("Production confirmed these hours. The mark goes on your invoice."); return; }
-  if (b.hasAttribute("data-switchjob")) { closeSheet(); mode = null; S.tab = "home"; render(); return; }
+  if (b.hasAttribute("data-switchjob")) { closeSheet(); toggleJobMenu(b); return; }
   if (b.hasAttribute("data-demo")) { mode = "demo"; D = demoLoad(); if (!D.settings.name) { D.settings.name = ""; } render(); return; }
   if (b.hasAttribute("data-signin")) { b.disabled = true; startGoogle(false).catch(function (er) { b.disabled = false; banner("Sign-in didn't finish: " + (er.message || er)); }); return; }
   if (b.hasAttribute("data-signout")) { if (mode === "google" && G.token && window.google) { try { google.accounts.oauth2.revoke(G.token, function () {}); } catch (x) {} } try { localStorage.removeItem("eltio-systems-signed-in"); } catch (x) {} mode = null; G = { token: null, exp: 0, client: null, sheetId: null, email: "" }; S.tab = "home"; render(); return; }
@@ -1407,7 +1687,9 @@ if ("serviceWorker" in navigator && location.protocol === "https:") navigator.se
 
 /* Opened from the site as a job (?as=gaffer): straight into sample data for that job. */
 var asJob = (location.search.match(/[?&]as=([a-z]+)/) || [])[1];
-if (!(asJob && startJob(asJob))) render();
+/* Same job already saved on this device: keep its pages and sidebar rather than starting again. */
+var kept = asJob && (function () { var s = demoLoad(); return s && s.settings && s.settings.job === asJob && s.settings.name ? s : null; })();
+if (kept) { mode = "demo"; D = kept; render(); } else if (!(asJob && startJob(asJob))) render();
 /* Returning user on this device: try a silent sign-in. If Google needs a tap, the welcome screen stays. */
 try { if (CFG.googleClientId && localStorage.getItem("eltio-systems-signed-in")) startGoogle(true).catch(function () {}); } catch (e) {}
 setInterval(function () { document.querySelectorAll(".callin").forEach(function (e) { e.textContent = callIn(); }); }, 30000);
