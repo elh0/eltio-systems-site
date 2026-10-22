@@ -658,7 +658,7 @@ function onboard(asSheet) {
   }).join("") + '</div><div class="acts"><button class="btn wide" data-close>Done</button><button class="lnk" data-onboff>Hide from home</button></div>';
   return '<button class="onb" data-onbopen><span class="onb-t"><span class="part">Set up your dashboard · ' + n + " of " + steps.length + '</span><span>Link Xero and your calendar, match your bank</span></span><span class="bar"><i style="width:' + (n / steps.length * 100).toFixed(0) + '%"></i></span><span class="go" aria-hidden="true">→</span></button>';
 }
-function dashTop() { if (mode === "google") return obNudge() + rescanLine() + (isProd() ? (D.pj ? pjCard() + (D.pj.wrap ? signCard() : "") : pjNewCard()) : ""); if (mode !== "demo" || !job()) return onboard(); return isProd() ? shootCard() + onboard() + pjCard() + hotCost() + signCard() + poCard() : deptCard() + diaryCard() + onboard() + jobsCard(); }
+function dashTop() { if (mode === "google") return obNudge() + fwdLine() + (isFwd() ? "" : rescanLine()) + (isProd() ? (D.pj ? pjCard() + (D.pj.wrap ? signCard() : "") : pjNewCard()) : ""); if (mode !== "demo" || !job()) return onboard(); return isProd() ? shootCard() + onboard() + pjCard() + hotCost() + signCard() + poCard() : deptCard() + diaryCard() + onboard() + jobsCard(); }
 function takeOffer(id, st) {
   var o = (D.offers || []).find(function (x) { return x.id === id; }); if (!o) return;
   var inSheet = $("sheet").classList.contains("on") && $("of-msg"), reply = inSheet ? $("of-msg").value.trim() : "", fl = inSheet ? readFields(o.fields) : JSON.stringify(parseF(o.fields));
@@ -929,7 +929,8 @@ function pjClick(b) {
 /* Bank statement: a CSV export from any UK bank, matched to unpaid invoices by amount or invoice number. No bank login. */
 var BANKROWS = [];
 function csvRows(t) {
-  return String(t).split(/\r?\n/).filter(function (l) { return l.trim(); }).map(function (l) { var out = [], cur = "", q = false; for (var i = 0; i < l.length; i++) { var ch = l[i]; if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; } else if (ch === "," && !q) { out.push(cur); cur = ""; } else cur += ch; } out.push(cur); return out.map(function (x) { return x.trim(); }); });
+  var dl = String(t).split("\t").length > String(t).split(",").length ? "\t" : ",";
+  return String(t).split(/\r?\n/).filter(function (l) { return l.trim(); }).map(function (l) { var out = [], cur = "", q = false; for (var i = 0; i < l.length; i++) { var ch = l[i]; if (ch === '"') { if (q && l[i + 1] === '"') { cur += '"'; i++; } else q = !q; } else if (ch === dl && !q) { out.push(cur); cur = ""; } else cur += ch; } out.push(cur); return out.map(function (x) { return x.trim(); }); });
 }
 /* Money in only: the first column that reads as a positive amount, the longest text as the description, any date as the date. */
 function readStatement(t) {
@@ -946,7 +947,7 @@ function sampleStatement() { var o = outstanding().slice(0, 2); return "Date,Des
 function bankSheet() {
   var M = BANKROWS.map(function (r) { return { r: r, v: matchInv(r) }; }), hit = M.filter(function (x) { return x.v; });
   return '<div class="top"><span class="q">Bank statement · CSV</span><span class="q">No bank login</span></div><h2>Who\'s paid you.</h2><p class="q">Download a CSV statement from your bank\'s app or website and drop it here. Payments in are matched to your unpaid invoices. Nothing leaves this device.</p>' +
-    '<div class="field"><label for="bk-file">Your statement (.csv)</label><input id="bk-file" type="file" accept=".csv,text/csv"></div>' +
+    '<div class="field"><label for="bk-file">Your statement (.csv)</label><input id="bk-file" type="file" accept=".csv,.xls,.txt,text/csv"></div>' + bankHow() +
     (BANKROWS.length ? '<div class="part">' + BANKROWS.length + " payments in · " + hit.length + ' match</div><div class="rows">' + M.map(function (x, i) {
       return '<div class="row static"><span>' + esc(x.r.desc) + ' <span class="q">· ' + esc(x.r.date) + '</span></span><span class="tag' + (x.v ? " ok" : "") + '">' + pounds(x.r.amt) + '</span><span class="sub">' + (x.v ? "Matches " + esc(x.v.number) + ", " + esc(x.v.client) + ' <button class="lnk" data-bankpaid="' + i + '">Mark paid</button>' : "No unpaid invoice for this amount") + "</span></div>";
     }).join("") + "</div>" + (hit.length ? '<div class="acts"><button class="btn solid" data-bankall>Mark ' + hit.length + " paid</button></div>" : "") : '<div class="acts"><button class="btn" data-banksample>Try a sample statement</button></div>');
@@ -1006,7 +1007,7 @@ function setup() {
     '<div class="grid2">' + field("s-tax", "Put aside for tax (%)", s.tax || "25", "number", "25", ' inputmode="numeric"') + field("s-mileage", "Mileage (pence a mile)", s.mileage || "45", "number", "45", ' inputmode="numeric"') + "</div>" +
     '<div class="part">On your invoices</div>' + field("s-addr", "Your address", s.addr, "text", "Street, town, postcode") +
     '<div class="grid2">' + field("s-bank", "Bank details", s.bank, "text", "Sort code and account number") + field("s-vat", "VAT number", s.vat, "text", "Only if you're registered") + "</div>" +
-    '<div class="field"><span class="lab">Which email do you use?</span>' + pills("mail", ["Gmail", "Outlook", "Apple Mail", "Other"], s.mail || "Gmail") + "</div>" +
+    '<div class="field"><span class="lab">Which email do you use?</span>' + pills("mail", MAILK, s.mail === "Apple Mail" ? "iCloud" : s.mail || "Gmail") + "</div>" +
     '<div class="field"><span class="lab">Do you have an agent?</span>' + pills("hasAgent", ["Yes", "No"], s.hasAgent || "No") + "</div>" +
     '<div id="agentf"' + (s.hasAgent === "Yes" ? "" : " hidden") + ' class="stack">' + field("s-agent", "Your agent", s.agent, "text", "Agency and agent's name") + field("s-agentEmail", "Their email", s.agentEmail, "email", "bookings@agency.com") + '<p class="q">Holds that come through your agent get drafted to them instead.</p></div>' +
     '<button class="btn solid" data-savesetup>' + (D.settings.name ? "Save" : "Build my sheet and start") + "</button>" +
@@ -1612,7 +1613,7 @@ function demoBar() { return '<div class="demobar"><span class="part">Sample data
 function render() {
   paintSky();
   var signedIn = !!mode, ready = signedIn && D.settings && D.settings.name && (mode === "demo" || G.sheetId);
-  $("main").innerHTML = (mode === "demo" && ready ? demoBar() : "") + (!signedIn ? welcome() : SCAN.stage ? scanScreen() : OB.active && mode === "google" ? obScreen() : !ready ? setup() : tipFor(S.tab) + (VIEWS[S.tab] || toolView)());
+  $("main").innerHTML = (mode === "demo" && ready ? demoBar() : "") + (!signedIn ? welcome() : SCAN.stage ? scanScreen() : OB.active && mode === "google" ? obScreen() : !ready ? setup() : tipFor(S.tab) + (VIEWS[S.tab] || toolView)() + watchLine());
   if (ready && mode === "demo" && !flag("eltio-systems-tour-1") && !$("tour")) showTour(0);
   var n = ready ? todo().length : 0;
   $("side").innerHTML = ready ? '<div class="who"><span>' + esc(D.settings.trading || D.settings.name) + '</span><span class="q">Eltio Systems</span></div>' + Object.keys(TABN).map(function (t) { return '<button data-tab="' + t + '" class="' + (S.tab === t ? "on" : "") + '"><span>' + TABN[t] + '</span><span class="q">' + (t === "home" && n ? n : "") + "</span></button>"; }).join("") + sideTools() + '<button class="btn solid add" data-addbooking>Add a booking</button>' : "";
@@ -1679,10 +1680,11 @@ function pool(items, n, fn) {
 }
 function runScan(o) {
   o = o || {};
-  var useMail = o.mail !== false, useCal = !!o.cal, bank = o.bank || [];
+  var useMail = o.mail !== false && !o.fwd, useFwd = !!o.fwd, useCal = !!o.cal, bank = o.bank || [];
   SCAN.stage = "run"; SCAN.err = ""; SCAN.steps = [];
   if (useCal) SCAN.steps.push({ n: "Your calendar", c: 0, st: "", u: ["event", "events"], cal: 1 });
   if (useMail) SCAN_Q.forEach(function (q) { SCAN.steps.push({ n: q.n, c: 0, st: "", u: ["email", "emails"], q: q }); });
+  if (useFwd) SCAN.steps.push({ n: "Work email forwarded to Systems", c: 0, st: "", u: ["email", "emails"], fwd: 1 });
   if (bank.length) SCAN.steps.push({ n: "Bank statements", c: 0, st: "", u: ["payment", "payments"], bank: 1 });
   SCAN.steps.push({ n: "Matching it all up", c: 0, st: "", u: ["", ""], fin: 1 });
   S.tab = "home"; render(); window.scrollTo(0, 0);
@@ -1696,6 +1698,7 @@ function runScan(o) {
         return pool(ids, 6, function (m) { return gm("messages/" + m.id + "?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=To&metadataHeaders=Date&fields=id,threadId,labelIds,snippet,internalDate,payload/headers"); })
           .then(function (full) { full.filter(Boolean).forEach(function (m) { m.k = x.q.k; mails.push(m); }); x.c = full.filter(Boolean).length; x.st = "ok"; });
       });
+      if (x.fwd) return fwdPull().then(function (p) { var old = Date.now() - 200 * 864e5; p.filter(function (m) { return +m.internalDate > old; }).forEach(function (m) { mails.push(m); }); x.c = p.length; x.st = "ok"; });
       if (x.bank) { x.c = bank.length; x.st = "ok"; return null; }
       if (x.fin) { SCAN.found = sortAll(mails, cal, bank); x.st = "ok"; }
     });
@@ -1749,7 +1752,7 @@ function scanScreen() {
     return '<div class="hero scan"><p class="q">Reading on this device</p><h1>Finding your work.</h1>' +
       '<span class="bar scan-bar"><i style="width:' + pct.toFixed(0) + '%"></i></span>' +
       '<div class="rows">' + SCAN.steps.map(function (x) { return '<div class="row static scan-s ' + x.st + '"><span><i class="ck' + (x.st === "ok" ? " on" : "") + '"></i>' + esc(x.n) + '</span><span class="q">' + (x.st === "ok" ? (x.fin ? "Done" : x.c + " " + (x.u ? x.u[x.c === 1 ? 0 : 1] : "emails")) : x.st === "on" ? "Looking…" : "") + "</span></div>"; }).join("") + "</div>" +
-      '<p class="q">Subjects, senders, dates and amounts only, read on this device. Nothing is sent and nothing is kept by us.</p></div>';
+      '<p class="q">' + (SCAN.steps.some(function (x) { return x.fwd; }) ? "Work emails from your Systems address, sorted on this device. They're cleared from the address once they're here." : "Subjects, senders, dates and amounts only, read on this device. Nothing is sent and nothing is kept by us.") + '</p></div>';
   }
   if (SCAN.stage === "review" && SCAN.found) {
     var F = SCAN.found, up = F.bookings.filter(function (b) { return !b.start || b.start >= iso(today()); }), past = F.bookings.filter(function (b) { return b.start && b.start < iso(today()); });
@@ -1763,7 +1766,7 @@ function scanScreen() {
     var tRow = function (x) { return '<label class="row static scan-r">' + ck(x) + '<span class="up-t">' + esc(x.t) + '<span class="q">' + esc(x.who) + " · " + nice(x.at) + "</span></span></label>"; };
     var paidOld = (F.paid || []).filter(function (p) { return p.old; });
     var grp = function (h, sub, L, f) { return L.length ? '<div class="part">' + h + " · " + L.length + '</div><p class="q">' + sub + '</p><div class="rows">' + L.map(f).join("") + "</div>" : ""; };
-    var read = [F.mails ? F.mails + (F.pasted ? " email" : " emails") : "", F.events ? F.events + " calendar events" : "", F.bankN ? F.bankN + " bank lines" : ""].filter(Boolean).join(", ") || "Nothing connected";
+    var read = [F.mails ? F.mails + (F.mails === 1 ? " email" : " emails") : "", F.events ? F.events + " calendar events" : "", F.bankN ? F.bankN + " bank lines" : ""].filter(Boolean).join(", ") || "Nothing connected";
     return '<div class="hero scan wide"><p class="q">Read ' + read + "</p><h1>" + (n ? "Here's your work." : "Nothing obvious yet.") + "</h1>" +
       (n ? '<p class="q">Untick anything that isn\'t right and fix any dates or amounts. Only what\'s ticked goes on your dashboard.</p>' : '<p class="q">' + (OB.active ? "Your dashboard starts empty. Type your next job in the box on Home and Systems takes it from there." : "We couldn\'t spot call sheets, holds or invoices. Add your next job by hand and Systems takes it from there.") + "</p>") +
       grp("Coming up", "Call sheets and calendar shoot days go in as booked. Holds and pencils go in as holds.", up, bRow) +
@@ -1782,7 +1785,7 @@ function scanScreen() {
     '<button class="btn solid gbtn" data-scan>Scan my email</button>' +
     '<div class="rows forrows"><div class="row static"><span>Call sheets</span><span class="q">Your next jobs, booked</span></div><div class="row static"><span>Holds and pencils</span><span class="q">Your diary</span></div><div class="row static"><span>Invoices you sent</span><span class="q">What you\'re owed</span></div><div class="row static"><span>Remittances</span><span class="q">Marked paid</span></div><div class="row static"><span>Timesheets and start packs</span><span class="q">What to do next</span></div></div>' +
     '<p class="q">Google will ask you to let Systems read your email. It only reads subjects, senders and dates, on this device. It can\'t send, delete or change anything, and nothing is kept.</p>' +
-    '<div class="acts"><button class="lnk" data-scanskip>Skip, I\'ll add things myself</button><a class="lnk" target="_blank" rel="noopener" href="' + tutUrl("02-getting-started") + '">Watch how it works · 1 min</a></div></div>';
+    '<div class="acts"><button class="lnk" data-scanskip>Skip, I\'ll add things myself</button>' + tutLink(tutFor("scan")) + '</div></div>';
 }
 function scanAdd(none) {
   var F = SCAN.found || emptyFound(), on = {}; document.querySelectorAll("[data-scanpick]").forEach(function (c) { on[c.dataset.scanpick] = !none && c.checked; });
@@ -1807,7 +1810,7 @@ function scanAdd(none) {
       if (ob && obProd() && OB.f.job) { D.pj = pjFrom(OB.f); extrasSave(); }
       busy = Math.max(0, busy - 1); SCAN.todos = (SCAN.todos || []).filter(function (x) { return !x.done; }).concat(nt.filter(function (x) { return !(SCAN.todos || []).some(function (y) { return y.id === x.id; }); }));
       if (F.mail && F.mail.length) SCAN.mail = F.mail.concat((SCAN.mail || []).filter(function (m) { return !F.mail.some(function (x) { return x.id === m.id; }); })).slice(0, 200);
-      SCAN.at = iso(today()); scanSaveLocal(); SCAN.found = null; if (ob) obEnd(); S.tab = "home"; render(); window.scrollTo(0, 0);
+      SCAN.at = iso(today()); scanSaveLocal(); if (F.mails && !F.pasted) fwdClear(); SCAN.found = null; if (ob) obEnd(); S.tab = "home"; render(); window.scrollTo(0, 0);
       var bits = [[nb.length, "job"], [ni.length + inc.length, "invoice"], [oldPaid.length, "payment matched", "payments matched"], [ne.length, "cost"], [nt.length, "to do", "to do"]].filter(function (x) { return x[0]; }).map(function (x) { return x[0] + " " + (x[0] === 1 ? x[1] : x[2] || x[1] + "s"); });
       banner(bits.length ? "Added " + (bits.length > 1 ? bits.slice(0, -1).join(", ") + " and " + bits[bits.length - 1] : bits[0]) + "." : ob ? "You're set up." : "Nothing added.");
     })
@@ -1822,7 +1825,7 @@ function scanDone() {
 function scanHero() { return ""; }
 function helpLine() {
   if (flag("sy-help-off")) return "";
-  return '<div class="helpl"><span class="q">New here?</span><a class="lnk" target="_blank" rel="noopener" href="' + tutUrl("02-getting-started") + '">Getting started, 1 min</a><button class="lnk" data-tab="t-help">All the how-tos</button><button class="lnk" data-helpoff aria-label="Hide">Hide</button></div>';
+  return '<div class="helpl"><span class="q">New here?</span>' + tutLink(tutFor() || "02-getting-started", "Watch") + '<button class="lnk" data-tab="t-help">All the how-tos</button><button class="lnk" data-helpoff aria-label="Hide">Hide</button></div>';
 }
 function scanInboxView() {
   var M = SCAN.mail || [];
@@ -1830,22 +1833,38 @@ function scanInboxView() {
   var by = {}; M.forEach(function (m) { (by[m.job] = by[m.job] || []).push(m); });
   var lab = { cs: "Call sheet", bk: "Booking", inv: "Invoice", paid: "Payment", "do": "To do" };
   return '<div class="top"><span>Inbox</span><button class="lnk" data-scan>Scan again</button></div><h2>Work email, sorted by job.</h2><p class="q">From your last scan, ' + nice(SCAN.at) + ". Tap one to open it in Gmail.</p>" +
-    Object.keys(by).slice(0, 30).map(function (j) { return '<div class="part">' + esc(j) + '</div><div class="rows">' + by[j].slice(0, 6).map(function (m) { return '<a class="row" target="_blank" rel="noopener" href="' + gmailLink(m.th) + '"><span class="up-t">' + esc(m.subj || "(no subject)") + '<span class="q">' + esc(m.who) + " · " + nice(m.at) + '</span></span><span class="tag">' + (lab[m.k] || "Email") + "</span></a>"; }).join("") + "</div>"; }).join("");
+    Object.keys(by).slice(0, 30).map(function (j) { return '<div class="part">' + esc(j) + '</div><div class="rows">' + by[j].slice(0, 6).map(function (m) { var fw = /^m:/.test(m.th || ""); return (fw ? '<div class="row static">' : '<a class="row" target="_blank" rel="noopener" href="' + gmailLink(m.th) + '">') + '<span class="up-t">' + esc(m.subj || "(no subject)") + '<span class="q">' + esc(m.who) + " · " + nice(m.at) + '</span></span><span class="tag">' + (lab[m.k] || "Email") + "</span>" + (fw ? "</div>" : "</a>"); }).join("") + "</div>"; }).join("");
 }
 /* Help: what to do first, and every tutorial. */
 var TUTS = [["01-systems-in-80-seconds", "Systems in 80 seconds", "1:13"], ["02-getting-started", "Getting started", "1:09"], ["03-systems-as-a-producer", "As a producer", "1:29"], ["04-systems-as-a-production-manager", "As a production manager", "0:49"], ["05-systems-as-a-dop", "As a DOP", "0:44"], ["06-systems-as-a-gaffer", "As a gaffer", "0:47"], ["07-systems-as-a-1st-ac", "As a 1st AC", "0:44"], ["08-systems-as-a-sound-recordist", "As a sound recordist", "0:35"], ["09-systems-as-a-director", "As a director", "0:29"], ["10-sign-off", "Sign-off: timesheet and invoice in one tap", "0:29"], ["11-call-sheets", "Call sheets: one link, every version", "0:35"], ["12-on-the-day", "On the day: wrap once, overtime by grade", "0:30"], ["13-rates", "APA and Bectu rates, built in", "0:28"], ["14-your-diary", "Your diary: holds and offers", "0:31"], ["15-passport-and-directory", "Crew passport and the directory", "0:29"], ["16-systems-with-xero", "With Xero, QuickBooks and FreeAgent", "0:27"], ["17-your-data-and-exports", "Your data in your Drive, and exports", "0:25"]];
 function tutUrl(id) { return siteUrl() + "tutorials/#" + id; }
+/* The video for wherever you are: the page, the setup step, or your job on Home. */
+var TUTJOB = { prod: "03-systems-as-a-producer", pm: "04-systems-as-a-production-manager", dop: "05-systems-as-a-dop", gaffer: "06-systems-as-a-gaffer", spark: "06-systems-as-a-gaffer", grip: "06-systems-as-a-gaffer", camera: "07-systems-as-a-1st-ac", sound: "08-systems-as-a-sound-recordist", dir: "09-systems-as-a-director" };
+var TUTPAGE = { bookings: "14-your-diary", money: "16-systems-with-xero", more: "17-your-data-and-exports", "t-help": "01-systems-in-80-seconds", "t-sign": "10-sign-off", "t-run": "10-sign-off", "t-cs": "11-call-sheets", "t-rates": "13-rates", "t-pass": "15-passport-and-directory", "t-dir": "15-passport-and-directory", "t-bank": "16-systems-with-xero", "t-inbox": "02-getting-started", "t-crew": "03-systems-as-a-producer", "t-permits": "03-systems-as-a-producer", "t-clients": "03-systems-as-a-producer", "t-rights": "03-systems-as-a-producer" };
+var TUTSTEP = { "You": "02-getting-started", "Connect": "02-getting-started", "Your rate": "13-rates", "Your company": "03-systems-as-a-producer", "The job": "03-systems-as-a-producer", "Crew and permits": "03-systems-as-a-producer", "Build": "02-getting-started" };
+function tutFor(where) {
+  var role = TUTJOB[jk()] || (roleKey() === "Producer" ? "03-systems-as-a-producer" : roleKey() === "Director" ? "09-systems-as-a-director" : "02-getting-started");
+  if (where === "ob") return TUTSTEP[obSteps()[OB.step]] || "02-getting-started";
+  if (where === "scan") return "02-getting-started";
+  var t = where || S.tab;
+  return TUTPAGE[t] || (t === "home" || /^t-(float|kit|made)/.test(t) ? role : "");
+}
+function tutLink(id, label) {
+  var t = TUTS.find(function (x) { return x[0] === id; }); if (!t) return "";
+  return '<a class="lnk" target="_blank" rel="noopener" href="' + tutUrl(id) + '">' + esc(label || "Watch how it works") + ": " + esc(t[1]) + " · " + t[2] + "</a>";
+}
+function watchLine() { var id = tutFor(); return id ? '<p class="q watchl">' + tutLink(id, "Watch how this works") + "</p>" : ""; }
 function helpView() {
   var first3 = mode === "google" ? [
     ["Connect calendar, email and bank", "Go back through setup and match everything up again.", 'data-obstart="1"', D.settings.onb === "2" ? "Done" : "Start"],
-    ["Scan your email again", "New call sheets, holds, invoices and payments since last time.", "data-scan", D.settings.scanned ? "Last " + nice(D.settings.scanned) : "Start"],
+    ["Scan your email again", isFwd() ? "Sort new work email forwarded to your Systems address." : "New call sheets, holds, invoices and payments since last time.", "data-scan", D.settings.scanned ? "Last " + nice(D.settings.scanned) : "Start"],
     ["Add your next job", "A booking or a hold. Holds get a nudge before the date.", "data-addbooking", D.bookings.length ? "Done" : "Start"],
     ["Log a day's hours", "Call and wrap in, overtime out, on APA or Bectu terms.", D.bookings.length ? 'data-tab="bookings"' : "data-addbooking", D.days.length ? "Done" : "Start"],
     ["Chase what's late", "Late invoices show in Needs you, with the chase drafted.", 'data-tab="money"', ""]
   ] : [["Try the sample job", "Everything here is sample data, so tap anything.", 'data-tab="home"', ""], ["Switch job", "See it as a producer, gaffer, costume designer and more.", "data-switchjob", ""]];
   return '<div class="part">What to do first</div><div class="rows">' + first3.map(function (x) { return '<button class="row" ' + x[2] + '><span class="up-t">' + esc(x[0]) + '<span class="q">' + esc(x[1]) + '</span></span><span class="q">' + esc(x[3] || "→") + "</span></button>"; }).join("") + "</div>" +
     '<div class="part">Short videos</div><div class="rows">' + TUTS.map(function (t) { return '<a class="row" target="_blank" rel="noopener" href="' + tutUrl(t[0]) + '"><span>' + esc(t[1]) + '</span><span class="q">' + t[2] + "</span></a>"; }).join("") + "</div>" +
-    (mode === "google" ? pasteBox() : "") + '<div class="part">Still stuck</div><p class="q">Email <a href="mailto:hello@eltio.studio?subject=Systems%20help">hello@eltio.studio</a> and say what you were trying to do. A person reads every one.</p>';
+    (mode === "google" ? fwdHelp() + pasteBox() : "") + '<div class="part">Still stuck</div><p class="q">Email <a href="mailto:hello@eltio.studio?subject=Systems%20help">hello@eltio.studio</a> and say what you were trying to do. A person reads every one.</p>';
 }
 var TOOLS_REAL = [
   { k: "t-inbox", n: "Inbox", g: "Your work", fn: scanInboxView },
@@ -1855,26 +1874,26 @@ var TOOLS_REAL = [
 var TOOLS_HELP = [{ k: "t-help", n: "How it works", g: "Help", fn: helpView }];
 function scanClick(b) {
   var d = b.dataset;
-  if (b.hasAttribute("data-scan")) { if (mode !== "google") { banner("Scanning works once you sign in with Google. Here it's sample data."); return true; } closeSheet(); runScan({ mail: true, cal: D.settings.cal === "1" }); return true; }
+  if (b.hasAttribute("data-scan")) { if (mode !== "google") { banner("Scanning works once you sign in with Google. Here it's sample data."); return true; } closeSheet(); runScan(scanOpts()); return true; }
   if (b.hasAttribute("data-scanskip")) { SCAN.stage = ""; scanDone(); return true; }
   if (b.hasAttribute("data-scanadd")) { scanAdd(b.hasAttribute("data-none")); return true; }
   if (b.hasAttribute("data-obback2")) { SCAN.stage = ""; SCAN.found = null; OB.step = 1; obSave(); render(); return true; }
   if (b.hasAttribute("data-scandone")) { scanDone(); return true; }
   if (b.hasAttribute("data-helpoff")) { flag("sy-help-off", "1"); render(); return true; }
-  if (d.todo === "mail") { var x = (SCAN.todos || []).find(function (y) { return y.th === d.id; }); if (x) { window.open(gmailLink(x.th), "_blank", "noopener"); x.done = true; scanSaveLocal(); render(); banner("Opened in Gmail. Ticked off here."); } return true; }
+  if (d.todo === "mail") { var x = (SCAN.todos || []).find(function (y) { return y.th === d.id; }); if (x) { var fw = /^m:/.test(x.th || ""); if (!fw) window.open(gmailLink(x.th), "_blank", "noopener"); x.done = true; scanSaveLocal(); render(); banner(fw ? "Ticked off." : "Opened in Gmail. Ticked off here."); } return true; }
   return false;
 }
 /* ---------- onboarding: who you are, connect calendar, email and bank, your rate or your company and job, then build the dashboard ---------- */
 var CAL = "https://www.googleapis.com/auth/calendar.events.readonly";
 var NO_CAL = "Google didn't let Systems see your calendar. Tap Connect again and tick the Calendar box on Google's screen.";
-function obBlank() { return { active: false, step: 0, role: "", work: "Both", f: {}, cal: false, mail: false, bank: [], files: [], err: "", email: "" }; }
+function obBlank() { return { active: false, step: 0, role: "", work: "Both", f: {}, cal: false, mail: false, kind: "", fwdN: 0, bank: [], files: [], err: "", email: "" }; }
 var OB = (function () { try { return Object.assign(obBlank(), JSON.parse(localStorage.getItem("sy-ob") || "null") || {}); } catch (e) { return obBlank(); } })();
 function obSave() { try { localStorage.setItem("sy-ob", JSON.stringify(OB)); } catch (e) {} }
 function obStart(step) {
   var s = D.settings || {};
   OB = obBlank(); OB.active = true; OB.step = step || 0; OB.email = G.email || "";
-  OB.role = s.role ? roleKey() : ""; OB.work = s.work || "Both"; OB.cal = !!G.cal; OB.mail = !!G.gmail;
-  OB.f = { name: s.name || G.name || "", trading: s.trading || "", grade: s.grade || "", rate: s.rate || "", terms: s.terms || "30", tax: s.tax || "25", addr: s.addr || "", bank: s.bank || "", vat: s.vat || "", hasAgent: s.hasAgent || "No", agent: s.agent || "", agentEmail: s.agentEmail || "", companyNo: s.companyNo || "", payroll: s.payroll || "", accountant: s.accountant || "", crewTerms: s.crewTerms || "30" };
+  OB.role = s.role ? roleKey() : ""; OB.work = s.work || "Both"; OB.cal = !!G.cal; OB.mail = !!G.gmail; OB.kind = mailKind();
+  OB.f = { name: s.name || G.name || "", trading: s.trading || "", grade: s.grade || "", rate: s.rate || "", terms: s.terms || "30", tax: s.tax || "25", addr: s.addr || "", bank: s.bank || "", vat: s.vat || "", hasAgent: s.hasAgent || "No", agent: s.agent || "", agentEmail: s.agentEmail || "", myMail: s.myMail || "", companyNo: s.companyNo || "", payroll: s.payroll || "", accountant: s.accountant || "", crewTerms: s.crewTerms || "30" };
   if (D.pj && D.pj.real) { var P = D.pj; Object.assign(OB.f, { job: P.name, client: P.client, brand: P.brand, accounts: P.accounts, po: P.po || "", budget: P.budget ? String(P.budget) : "", split: String(P.split), payDays: String(P.payDays), shoot: P.shoot, days: String(P.days), jterms: P.terms, pshoot: P.pshoot, permits: P.permits.slice(), crew: P.crew.map(function (c) { return [c.n, c.grade, c.email].filter(Boolean).join(", "); }).join("\n") }); }
   obSave(); SCAN.stage = ""; S.tab = "home"; closeSheet(); render(); window.scrollTo(0, 0);
 }
@@ -1885,7 +1904,7 @@ function obSteps() { return obProd() ? ["You", "Connect", "Your company", "The j
 function obRead() {
   document.querySelectorAll('#main input[id^="ob-"], #main select[id^="ob-"], #main textarea[id^="ob-"]').forEach(function (e) { if (e.type === "file") return; OB.f[e.id.slice(3)] = e.value.trim(); });
   var r = picked("obrole"); if (r) OB.role = r; var w = picked("obwork"); if (w) OB.work = w;
-  var t = picked("objterms"); if (t) OB.f.jterms = t; var a = picked("obagent"); if (a) OB.f.hasAgent = a;
+  var mk = picked("obmail"); if (mk) OB.kind = mk; var t = picked("objterms"); if (t) OB.f.jterms = t; var a = picked("obagent"); if (a) OB.f.hasAgent = a;
   obSave();
 }
 function obScreen() {
@@ -1898,17 +1917,19 @@ function obScreen() {
   if (k === "Connect") {
     var con = function (key, t, sub, on) { return '<div class="row static ob-c"><span class="up-t">' + t + '<span class="q">' + sub + "</span></span>" + (on ? '<span class="tag ok">Connected</span>' : '<button class="btn sm solid" data-obcon="' + key + '">Connect</button>') + "</div>"; };
     var nIn = OB.bank.filter(function (r) { return r.amt > 0; }).length, nOut = OB.bank.length - nIn;
-    body = "<h1>Connect your stuff.</h1><p class=\"q\">The more you connect, the more Systems fills in for you. Everything is read on this device. Nothing is sent, changed or kept by us.</p>" +
+    body = "<h1>Connect your stuff.</h1><p class=\"q\">The more you connect, the more Systems fills in for you. " + (mailKind() === "Gmail" ? "Everything is read on this device. Nothing is sent, changed or kept by us." : "Your calendar and bank are read on this device. Your email forwards to a private Systems address.") + "</p>" +
       '<div class="rows">' +
       con("cal", "Google Calendar", P ? "Shoot days, recces, PPMs and holds." : "Your shoot days, holds and recces.", OB.cal) +
-      con("gmail", "Gmail", P ? "Awards, call sheets, invoices you've sent and remittances." : "Call sheets, holds, invoices you've sent and remittances.", OB.mail) +
-      '<div class="row static ob-c ob-bank"><span class="up-t">Bank statements<span class="q">A CSV from each account you get paid into' + (P ? ", business account first" : "") + '. Payments are matched to invoices, and work costs are picked out.</span></span><label class="btn sm' + (OB.files.length ? "" : " solid") + '" for="ob-bankfile">' + (OB.files.length ? "Add another" : "Add a CSV") + '</label><input id="ob-bankfile" class="vh" type="file" accept=".csv,text/csv" multiple></div>' +
+      "</div>" +
+      '<div class="field"><span class="lab">Which email do you use for work?</span>' + pills("obmail", MAILK, mailKind()) + "</div>" +
+      (mailKind() === "Gmail" ? '<div class="rows">' + con("gmail", "Gmail", P ? "Awards, call sheets, invoices you've sent and remittances." : "Call sheets, holds, invoices you've sent and remittances.", OB.mail) + "</div>" : fwdPanel()) +
+      '<div class="rows">' +
+      '<div class="row static ob-c ob-bank"><span class="up-t">Bank statements<span class="q">A CSV from each account you get paid into' + (P ? ", business account first" : "") + '. Payments are matched to invoices, and work costs are picked out.</span></span><label class="btn sm' + (OB.files.length ? "" : " solid") + '" for="ob-bankfile">' + (OB.files.length ? "Add another" : "Add a CSV") + '</label><input id="ob-bankfile" class="vh" type="file" accept=".csv,.xls,.txt,text/csv" multiple></div>' +
       (OB.files.length ? OB.files.map(function (x, j) { return '<div class="row static ob-f"><span class="q">' + esc(x.name) + " · " + x.n + ' lines</span><button class="lnk" data-obbankx="' + j + '">Remove</button></div>'; }).join("") : "") +
       "</div>" +
       (OB.files.length ? '<p class="q">' + nIn + " payments in and " + nOut + " out, ready to match.</p>" : "") +
-      '<details class="ob-how"><summary class="q">How to get a CSV from your bank</summary><p class="q">On your bank\'s website or app, open your statements or transactions and look for Export, Download or CSV. Pick the last 12 months. Most UK banks and Monzo, Starling and Revolut offer it. Add one file per account.</p></details>' +
-      '<p class="q">Not on Gmail? Skip it, and paste emails in from Help later.</p>' +
-      '<p class="q">While Systems is being checked by Google, its screen says it "hasn\'t verified this app". Tap Advanced, then Go to Systems.</p>';
+      bankHow() +
+      (mailKind() === "Gmail" ? '<p class="q">While Systems is being checked by Google, its screen says it "hasn\'t verified this app". Tap Advanced, then Go to Systems.</p>' : "");
   }
   if (k === "Your rate") body = "<h1>Your rate.</h1><p class=\"q\">So timesheets, overtime and invoices come out right first time.</p>" +
     gradeField("ob-grade", "Your grade", cardOf(OB.work === "TV and film" ? "TV drama" : "APA"), f.grade || "", "ob-rate", f.rate) +
@@ -1939,12 +1960,12 @@ function obScreen() {
   if (k === "Build") {
     var crewN = crewParse(f.crew).length, row = function (t, v, ok) { return '<div class="row static"><span>' + t + '</span><span class="tag' + (ok ? " ok" : "") + '">' + esc(v) + "</span></div>"; };
     body = "<h1>Ready when you are.</h1><p class=\"q\">Systems reads and matches everything on this device, then shows you the list. Nothing is saved until you say so.</p><div class=\"rows\">" +
-      row("Calendar", OB.cal ? "Connected" : "Not connected", OB.cal) + row("Email", OB.mail ? "Connected" : "Not connected", OB.mail) + row("Bank statements", OB.files.length ? OB.files.length + " file" + (OB.files.length > 1 ? "s" : "") : "None yet", OB.files.length) +
+      row("Calendar", OB.cal ? "Connected" : "Not connected", OB.cal) + row("Email", mailKind() === "Gmail" ? (OB.mail ? "Connected" : "Not connected") : obFwd() ? "Forwarding to Systems" : "Not set up", mailKind() === "Gmail" ? OB.mail : obFwd()) + row("Bank statements", OB.files.length ? OB.files.length + " file" + (OB.files.length > 1 ? "s" : "") : "None yet", OB.files.length) +
       (P ? row("The job", f.job || "Add it later", !!f.job) + row("Crew", crewN ? crewN + " people" : "None yet", crewN) : row("Your rate", f.rate ? "£" + f.rate + " a day" : "Add it later", !!f.rate)) + "</div>" +
-      (OB.cal || OB.mail || OB.files.length ? "" : '<p class="q">Nothing connected yet, so your dashboard starts empty. You can connect things later from Help.</p>');
+      (OB.cal || OB.mail || obFwd() || OB.files.length ? "" : '<p class="q">Nothing connected yet, so your dashboard starts empty. You can connect things later from Help.</p>');
   }
-  var nav = '<div class="acts">' + (i ? '<button class="btn" data-obback>Back</button>' : "") + (k === "Build" ? '<button class="btn solid" data-obgo>Build my dashboard</button>' : '<button class="btn solid" data-obnext>' + (k === "Connect" && !OB.cal && !OB.mail && !OB.files.length ? "Skip for now" : "Next") + "</button>") + "</div>";
-  return '<div class="hero scan wide ob">' + steps + (OB.err ? '<p class="note">' + esc(OB.err) + "</p>" : "") + body + nav + '<p class="q"><a class="lnk" target="_blank" rel="noopener" href="' + tutUrl("02-getting-started") + '">Watch how it works · 1 min</a></p></div>';
+  var nav = '<div class="acts">' + (i ? '<button class="btn" data-obback>Back</button>' : "") + (k === "Build" ? '<button class="btn solid" data-obgo>Build my dashboard</button>' : '<button class="btn solid" data-obnext>' + (k === "Connect" && !OB.cal && !OB.mail && !obFwd() && !OB.files.length ? "Skip for now" : "Next") + "</button>") + "</div>";
+  return '<div class="hero scan wide ob">' + steps + (OB.err ? '<p class="note">' + esc(OB.err) + "</p>" : "") + body + nav + '<p class="q">' + tutLink(tutFor("ob")) + '</p></div>';
 }
 function wantScope(k) {
   if (k === "gmail" ? G.gmail : G.cal) return Promise.resolve();
@@ -1960,6 +1981,39 @@ function obConnect(k) {
 function readFiles(files, fn) { Array.prototype.forEach.call(files || [], function (f) { var r = new FileReader(); r.onload = function () { fn(f, String(r.result || "")); }; r.readAsText(f); }); }
 function obBankFiles(files) {
   readFiles(files, function (f, t) { var rows = readBank(t); OB.bank = OB.bank.concat(rows.map(function (x) { x.file = f.name; return x; })).slice(-4000); OB.files.push({ name: f.name, n: rows.length }); obSave(); render(); if (!rows.length) banner("Couldn't find any payments in " + f.name + ". Is it a CSV statement?"); });
+}
+
+/* ---------- how to get a CSV from your bank: pick your bank, see its own steps ---------- */
+/* Where the export lives differs by bank: the app for Monzo, Starling, Tide and Wise, online banking on a computer for most high-street banks. */
+var BANKHOW = [
+  { n: "Monzo", w: "In the app", s: ["Open the Home tab and tap the three dots on your card.", "Tap Bank statements.", "Choose the dates. The last 12 months is ideal.", "Pick CSV, then save it or share it to this device."], note: "Monzo Business: log in at business.monzo.com and use Export statement.", url: "https://monzo.com/help/budgeting-overdrafts-savings/exporting-my-transactions" },
+  { n: "Starling", w: "In the app", s: ["Tap the account icon at the top right.", "Tap Statements, then Statement history.", "Choose a start and end date.", "Pick CSV and download it."], url: "https://www.starlingbank.com/features/statements/" },
+  { n: "Revolut", w: "In the app", s: ["On Home, tap Accounts under your balance.", "Pick the pounds account.", "Tap More (…), then Statement.", "Choose the dates, pick Excel, then Generate."], note: "If the file ends in .xlsx, open it and save it as CSV first.", url: "https://help.revolut.com/en-GB/help/profile-and-plan/managing-my-account/account-statement-per-chosen-currency/" },
+  { n: "Tide", w: "In the app or online", s: ["Tap Pay, then View more under your transactions.", "Filter to the dates you want.", "Tap the Share icon at the top right.", "Pick a CSV type, then Export."], url: "https://www.tide.co/help-centre/download-tide-account-statements-and-transactions" },
+  { n: "Wise", w: "In the app or online", s: ["Open your pounds balance.", "Tap the three dots, then Statements and reports.", "Choose the dates, up to a year.", "Pick CSV and confirm."], url: "https://wise.com/help/articles/2736049/how-do-i-download-a-statement" },
+  { n: "Barclays", w: "Online banking, on a computer", s: ["Log in to Online Banking and open the account.", "Click View all transactions.", "Set the dates and search.", "Click Export All at the bottom and pick CSV."], note: "The app only gives PDFs. Each export may only go back a few months, so do it in chunks.", url: "https://barclays.co.uk/help/online-banking/using-online-banking/export-data" },
+  { n: "HSBC", w: "Online banking, on a computer", s: ["Log on to online banking and pick the account.", "Choose Search and filter and set the dates.", "Scroll to the bottom of the list and click Download.", "Pick CSV and Continue."], note: "The app only gives PDFs. It may only allow a month or so per download." },
+  { n: "Lloyds or Halifax", w: "Internet banking, on a computer", s: ["Log on and open the account.", "Above your transactions, look for Export or Statement options.", "Choose Export transactions and pick CSV.", "Set the dates and Export."], note: "Same for Bank of Scotland. The app doesn't do CSV." },
+  { n: "NatWest or RBS", w: "Online banking, on a computer", s: ["Log in to Online Banking.", "Go to Statements and transactions, then View transactions.", "Pick the account and the dates.", "Click Export to Excel. The file it saves is a CSV."], note: "Same for Ulster Bank. Each export may only cover about 3 months." },
+  { n: "Santander", w: "Online banking, on a computer", s: ["Log on and open the account.", "Select Download transactions.", "Choose the dates.", "Pick Microsoft Excel and Download."], note: "Up to 600 transactions per download." },
+  { n: "Nationwide", w: "Internet bank, on a computer", s: ["Log in and open the account.", "View your transactions and set the dates.", "Open the Download transactions menu.", "Pick CSV."], note: "The app only gives PDFs." },
+  { n: "First Direct", w: "Online banking, on a computer", s: ["Log on and open the account.", "Go to your transactions.", "Click Download and set the dates.", "Pick CSV."] },
+  { n: "Metro", w: "Online banking, on a computer", s: ["Log in and open the account.", "Go to Transaction summary.", "Click Search and set the dates.", "Click Export for a CSV."], note: "Download gives a PDF, so use Export." },
+  { n: "Co-op", w: "Online banking, on a computer", s: ["Log in to Online Banking.", "Click Search transactions.", "Pick the account and the dates, then search.", "Change the format from PDF to CSV and Download."] },
+  { n: "Other", w: "App or website", s: ["Open your statements or transactions.", "Look for Export, Download or CSV.", "Pick the last 12 months.", "Save it, then add it here. One file per account."], note: "If your app only gives PDFs, try your bank's website on a computer." }
+];
+function bankPicked() { try { return localStorage.getItem("sy-bankhow") || ""; } catch (e) { return ""; } }
+function bankSteps(n) {
+  var b = BANKHOW.find(function (x) { return x.n === n; });
+  if (!b) return '<p class="q">Pick your bank to see where its CSV is.</p>';
+  return '<p class="bh-w">' + esc(b.w) + '</p><ol class="fwd-s">' + b.s.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ol>" +
+    (b.note ? '<p class="q">' + esc(b.note) + "</p>" : "") +
+    (b.url ? '<p class="q"><a class="lnk" target="_blank" rel="noopener" href="' + b.url + '">' + esc(b.n) + " help page</a></p>" : "");
+}
+function bankHow(open) {
+  var cur = bankPicked();
+  return '<details class="ob-how bh"' + (open || cur ? " open" : "") + '><summary class="q">How to get a CSV from your bank</summary>' +
+    pills("bankhow", BANKHOW.map(function (x) { return x.n; }), cur) + '<div class="bh-s">' + bankSteps(cur) + "</div></details>";
 }
 
 /* Bank CSVs: date, description and money in or out, whichever bank it's from. */
@@ -2049,11 +2103,13 @@ function sortAll(mails, cal, bank) {
   F.paid = B.paid; F.income = B.income; F.costs = B.costs; F.events = (cal || []).length; F.bankN = (bank || []).length;
   return F;
 }
+function obFwd() { return mailKind() !== "Gmail" && !!fwdGet(); }
 function emptyFound() { return { bookings: [], invoices: [], todos: [], mail: [], mails: 0, paid: [], income: [], costs: [], events: 0, bankN: 0 }; }
 function obGo() {
   obRead(); OB.err = "";
-  if (!OB.cal && !OB.mail && !OB.bank.length) { SCAN.found = emptyFound(); scanAdd(); return; }
-  runScan({ mail: OB.mail, cal: OB.cal, bank: OB.bank });
+  var fw = obFwd();
+  if (!OB.cal && !OB.mail && !fw && !OB.bank.length) { SCAN.found = emptyFound(); scanAdd(); return; }
+  runScan({ mail: !fw && OB.mail, fwd: fw, cal: OB.cal, bank: OB.bank });
 }
 /* What onboarding collected goes into Settings, and a producer's job becomes their first job. */
 function obApply(st) {
@@ -2062,7 +2118,9 @@ function obApply(st) {
   ["trading", "addr", "bank", "vat"].forEach(function (k) { if (f[k] != null) st[k] = f[k]; });
   if (P) { st.job = "prod"; ["companyNo", "payroll", "accountant", "crewTerms"].forEach(function (k) { if (f[k] != null) st[k] = f[k]; }); }
   else { ["grade", "rate", "tax", "hasAgent", "agent", "agentEmail"].forEach(function (k) { if (f[k] != null) st[k] = f[k]; }); st.terms = f.terms || st.terms || "30"; if (st.job === "prod") st.job = ""; }
-  st.terms = st.terms || "30"; st.tax = st.tax || "25"; st.mileage = st.mileage || "45"; st.invoicePrefix = st.invoicePrefix || "INV"; st.mail = OB.mail ? "Gmail" : st.mail || "Gmail";
+  st.terms = st.terms || "30"; st.tax = st.tax || "25"; st.mileage = st.mileage || "45"; st.invoicePrefix = st.invoicePrefix || "INV"; st.mail = OB.kind || (OB.mail ? "Gmail" : st.mail || "Gmail");
+  if (f.myMail != null) st.myMail = f.myMail;
+  if (obFwd()) { st.fwd = JSON.stringify(fwdGet()); st.scanned = iso(today()); }
   if (OB.cal) st.cal = "1"; if (OB.mail) st.scanned = iso(today()); st.onb = "2";
 }
 
@@ -2166,7 +2224,7 @@ function tipFor(t) {
   if (mode !== "google" || flag("sy-tip-" + t)) return "";
   var x = TIPS[t]; if (t === "home" && isProd()) x = ["Run the job takes you from the award to the pay run, step by step. Type a job in the box to add a booking.", "03-systems-as-a-producer"];
   if (!x) return "";
-  return '<div class="tipl"><span>' + esc(x[0]) + "</span>" + (x[1] ? '<a class="lnk" target="_blank" rel="noopener" href="' + tutUrl(x[1]) + '">Watch, under a minute</a>' : "") + (t === "home" ? '<button class="lnk" data-tab="t-help">All the how-tos</button>' : "") + '<button class="lnk" data-tipoff="' + esc(t) + '">Got it</button></div>';
+  return '<div class="tipl"><span>' + esc(x[0]) + "</span>" + (tutFor(t) ? '<a class="lnk" target="_blank" rel="noopener" href="' + tutUrl(tutFor(t)) + '">Watch, under a minute</a>' : "") + (t === "home" ? '<button class="lnk" data-tab="t-help">All the how-tos</button>' : "") + '<button class="lnk" data-tipoff="' + esc(t) + '">Got it</button></div>';
 }
 
 /* Idea 5: paste an email from any mail app. */
@@ -2184,6 +2242,7 @@ function pasteRead() {
 
 function obClick(b) {
   var d = b.dataset;
+  if (fwdClick(b)) return true;
   if (d.obstart) { obStart(+d.obstart || 0); return true; }
   if (b.hasAttribute("data-obnudgeoff")) { flag("sy-obnudge-off", "1"); render(); return true; }
   if (b.hasAttribute("data-obnext")) { obRead(); if (OB.step === 0 && (!OB.f.name || !OB.role)) { banner(!OB.f.name ? "Add your name first." : "Pick what you do."); return true; } OB.err = ""; OB.step = Math.min(OB.step + 1, obSteps().length - 1); obSave(); render(); window.scrollTo(0, 0); return true; }
@@ -2194,7 +2253,7 @@ function obClick(b) {
   if (b.hasAttribute("data-obgo")) { obGo(); return true; }
   if (b.hasAttribute("data-pjnew")) { openSheet(pjNewSheet()); return true; }
   if (b.hasAttribute("data-pjnewsave")) { pjNewSave(); return true; }
-  if (b.hasAttribute("data-rescan")) { runScan({ mail: true, cal: D.settings.cal === "1" }); return true; }
+  if (b.hasAttribute("data-rescan")) { runScan(scanOpts()); return true; }
   if (d.tipoff) { flag("sy-tip-" + d.tipoff, "1"); render(); return true; }
   if (b.hasAttribute("data-pasteread")) { pasteRead(); return true; }
   return false;
@@ -2206,6 +2265,106 @@ document.addEventListener("change", function (e) {
     var lines = body.map(function (r) { return ni >= 0 ? [r[ni], ri >= 0 ? r[ri] : "", ei >= 0 ? r[ei] : ""].filter(Boolean).join(", ") : r.filter(Boolean).join(", "); }).filter(Boolean), ta = $("ob-crew"); if (ta) ta.value = (ta.value ? ta.value.trim() + "\n" : "") + lines.join("\n"); banner(lines.length + " people added from " + f.name + "."); });
 });
 document.addEventListener("submit", function (e) { if (e.target.id === "qa") { e.preventDefault(); var v = val("qa-in"); if (v && quickSave(v)) { var i = $("qa-in"); if (i) i.value = ""; } } });
+/* ---------- any inbox: Outlook, iCloud, Yahoo or work mail forwards to a private Systems address, and the scan reads it the same way as Gmail ---------- */
+/* The address only keeps work emails (call sheets, holds, invoices, payments) and drops the rest. What it keeps is deleted once this app has collected it. */
+var MAILK = ["Gmail", "Outlook", "iCloud", "Other"];
+var FWD_HOW = {
+  Outlook: { url: "https://outlook.live.com/mail/0/options/mail/forwarding", work: "https://outlook.office.com/mail/options/mail/forwarding", steps: ["Open Outlook's forwarding settings.", "Turn on forwarding and paste your Systems address.", "Tick Keep a copy of forwarded messages, then Save."] },
+  iCloud: { url: "https://www.icloud.com/mail/", steps: ["Open iCloud Mail and tap the settings button, then Forwarding.", "Tick Forward my email to and paste your Systems address.", "Save. Your email stays in iCloud as well."] },
+  Other: { url: "", steps: ["In your email settings, find Forwarding. On Yahoo it's Settings, More settings, Mailboxes.", "Forward to your Systems address and keep a copy.", "Save. If it sends a confirmation email, the link shows up here."] }
+};
+var FW = { busy: false, n: 0, confirm: "", err: "" };
+function mailKind() { var m = (OB.active && OB.kind) || D.settings.mail || "Gmail"; return m === "Apple Mail" ? "iCloud" : MAILK.indexOf(m) >= 0 ? m : "Other"; }
+function fwdGet() { try { return JSON.parse(D.settings.fwd || localStorage.getItem("sy-fwd") || "null"); } catch (e) { return null; } }
+function isFwd() { return mailKind() !== "Gmail" && !!fwdGet(); }
+function scanOpts() { var f = isFwd(); return { mail: !f, fwd: f, cal: D.settings.cal === "1" }; }
+function fwdApi(path, body) {
+  if (!CFG.scanApi) return Promise.reject(new Error("Forwarding is switching on soon. Paste emails in from Help for now."));
+  return fetch(CFG.scanApi + path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body || {}) })
+    .then(function (r) { return r.json().then(function (j) { if (!r.ok) throw new Error(j.error === "key" ? "Your Systems address needs setting up again." : "Couldn't reach your Systems address."); return j; }); });
+}
+/* One address per person, kept in their own sheet so their phone and laptop share it. */
+function fwdNew() {
+  var x = fwdGet(); if (x) return Promise.resolve(x);
+  if (FW.busy) return Promise.resolve(null);
+  FW.busy = true; FW.err = "";
+  return fwdApi("/new").then(function (j) {
+    FW.busy = false; var v = JSON.stringify({ id: j.id, key: j.key, address: j.address });
+    try { localStorage.setItem("sy-fwd", v); } catch (e) {}
+    if (G.sheetId) change("Settings", function (st) { st.fwd = v; }).catch(function () {}); else D.settings.fwd = v;
+    render(); return j;
+  }, function (e) { FW.busy = false; FW.err = e.message; render(); return null; });
+}
+function poolKey() { var x = fwdGet(); return "sy-fwd-pool-" + (x ? x.id : ""); }
+function poolGet() { try { return JSON.parse(localStorage.getItem(poolKey()) || "[]"); } catch (e) { return []; } }
+function poolSet(p) { try { localStorage.setItem(poolKey(), JSON.stringify(p.slice(-400))); } catch (e) {} }
+/* A forwarded email in the same shape as a Gmail one, so the same sorting reads it. */
+function fwdMsg(m) {
+  var low = (m.subject + " " + m.snippet + " " + (m.files || []).join(" ")).toLowerCase(), me = (D.settings.myMail || OB.f.myMail || "").toLowerCase();
+  var mine = !!me && String(m.from).toLowerCase().indexOf(me) >= 0;
+  var k = /call ?sheet|callsheet/.test(low) ? "cs" : /remittance|payment (advice|sent|made|confirmation)|has been paid|we(’|')?ve paid/.test(low) ? "paid" : /invoice|\binv\b/.test(low) ? "inv" : /timesheet|time sheet|timecard|start (pack|form)|crew form|purchase order|po number/.test(low) ? "do" : "bk";
+  return { id: m.key, threadId: m.key, labelIds: mine ? ["SENT"] : [], snippet: (m.snippet || "").slice(0, 500), internalDate: String(m.at || Date.now()), payload: { headers: [{ name: "Subject", value: m.subject || "" }, { name: "From", value: m.from || "" }, { name: "To", value: m.to || "" }] }, k: k };
+}
+/* Collect what's arrived, keep it on this device, then clear it from the address. */
+function fwdPull() {
+  var x = fwdGet(); if (!x) return Promise.resolve(poolGet());
+  return fwdApi("/read", { id: x.id, key: x.key }).then(function (j) {
+    var got = j.mails || [], pool = poolGet(), fresh = 0;
+    got.forEach(function (m) { if (m.confirm) { FW.confirm = m.confirm; return; } if (!pool.some(function (p) { return p.id === m.key; })) { pool.push(fwdMsg(m)); fresh++; } });
+    poolSet(pool); FW.n += fresh;
+    if (got.length) fwdApi("/ack", { id: x.id, key: x.key, keys: got.map(function (m) { return m.key; }) }).catch(function () {});
+    return pool;
+  });
+}
+function fwdClear() { if (isFwd()) poolSet([]); FW.n = 0; }
+function fwdCheck() {
+  FW.busy = true; FW.err = ""; render();
+  fwdPull().then(function (p) { FW.busy = false; OB.fwdN = p.length; obSave(); render(); banner(p.length ? p.length + " work email" + (p.length === 1 ? "" : "s") + " in so far." : FW.confirm ? "Your email sent a confirmation. Tap Confirm forwarding." : "Nothing yet. Forwarding can take a few minutes to start."); },
+    function (e) { FW.busy = false; FW.err = e.message; render(); });
+}
+/* The connect step for anything that isn't Gmail. */
+function fwdPanel() {
+  var k = mailKind(), x = fwdGet(), h = FWD_HOW[k] || FWD_HOW.Other, n = poolGet().length;
+  if (!CFG.scanApi) return '<p class="q">Forwarding from ' + esc(k === "Other" ? "other email" : k) + " is switching on soon. Until then, paste emails in from Help.</p>";
+  var addr = x ? '<div class="row static ob-c fwd-a"><span class="up-t">Your Systems address<span class="fwd-ad">' + esc(x.address) + '</span></span><button class="btn sm solid" data-fwdcopy>Copy</button></div>'
+    : '<div class="row static ob-c"><span class="up-t">Your Systems address<span class="q">' + (FW.err ? esc(FW.err) : "Making it now…") + "</span></span>" + (FW.err ? '<button class="btn sm" data-fwdnew>Try again</button>' : "") + "</div>";
+  return '<div class="rows">' + addr + "</div>" +
+    field("ob-myMail", "Your " + (k === "Other" ? "" : k + " ") + "email address", OB.f.myMail || "", "email", k === "Outlook" ? "you@outlook.com" : k === "iCloud" ? "you@icloud.com" : "you@yourdomain.com") +
+    '<ol class="fwd-s">' + h.steps.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + "</ol>" +
+    '<div class="acts">' + (h.url ? '<a class="btn" target="_blank" rel="noopener" href="' + h.url + '">Open ' + esc(k) + " settings</a>" : "") + (h.work ? '<a class="btn" target="_blank" rel="noopener" href="' + h.work + '">Work or school Outlook</a>' : "") + "</div>" +
+    (FW.confirm ? '<div class="note">Your email sent a confirmation first. <a class="lnk" target="_blank" rel="noopener" href="' + esc(/^https:/.test(FW.confirm) ? FW.confirm : (h.url || "#")) + '">Confirm forwarding</a></div>' : "") +
+    '<div class="rows"><div class="row static ob-c"><span class="up-t">' + (n ? n + " work email" + (n === 1 ? "" : "s") + " in" : "Waiting for your first email") + '<span class="q">Send yourself a test with "call sheet" in the subject, then check.</span></span><button class="btn sm" data-fwdcheck' + (FW.busy ? " disabled" : "") + ">" + (FW.busy ? "Checking…" : "Check") + "</button></div></div>" +
+    '<details class="ob-how"><summary class="q">Got older call sheets and invoices?</summary><p class="q">Forwarding catches new email. For the last few months, select your call sheets, holds, invoices and remittances and forward them to your Systems address. In Outlook, Forward as attachment sends lots in one go.</p></details>' +
+    '<p class="q">Only work emails are kept, like call sheets, holds, invoices and payments. Everything else is dropped straight away. What\'s kept is deleted once Systems has it, and never shared.</p>';
+}
+/* On the dashboard: new forwarded email, ready to sort. */
+function fwdLine() {
+  if (!isFwd() || !FW.n) return "";
+  return '<button class="onb scanh" data-rescan><span class="onb-t"><span class="part">' + FW.n + " new work email" + (FW.n === 1 ? "" : "s") + '</span><span>Forwarded since you last looked. Sort them into your jobs and invoices</span></span><span class="go" aria-hidden="true">→</span></button>';
+}
+function fwdHelp() {
+  var x = fwdGet(); if (!x) return "";
+  return '<div class="part">Your Systems address</div><div class="rows"><div class="row static ob-c fwd-a"><span class="up-t">Forward work email here<span class="fwd-ad">' + esc(x.address) + '</span></span><button class="btn sm" data-fwdcopy>Copy</button></div></div>' +
+    '<div class="acts"><button class="btn sm" data-fwdforget>' + (FW.sure ? "Tap again to delete it" : "Delete this address") + '</button></div><p class="q">Deleting it clears anything waiting there. Turn off forwarding in your email too.</p>';
+}
+function fwdForget() {
+  var x = fwdGet(); if (!x) return;
+  if (!FW.sure) { FW.sure = true; render(); return; }
+  FW.sure = false;
+  fwdApi("/forget", { id: x.id, key: x.key }).catch(function () {}).then(function () {
+    poolSet([]); try { localStorage.removeItem("sy-fwd"); } catch (e) {}
+    var done = function () { render(); banner("Your Systems address is deleted. Turn off forwarding in your email too."); };
+    if (G.sheetId) change("Settings", function (st) { st.fwd = ""; }).then(done, done); else { D.settings.fwd = ""; done(); }
+  });
+}
+function fwdClick(b) {
+  if (b.hasAttribute("data-fwdforget")) { fwdForget(); return true; }
+  if (b.hasAttribute("data-fwdcopy")) { var x = fwdGet(); if (x) { (navigator.clipboard ? navigator.clipboard.writeText(x.address) : Promise.reject()).then(function () { banner("Copied. Paste it into your forwarding settings."); }, function () { banner(x.address); }); } return true; }
+  if (b.hasAttribute("data-fwdnew")) { fwdNew(); return true; }
+  if (b.hasAttribute("data-fwdcheck")) { obRead(); fwdCheck(); return true; }
+  return false;
+}
+
 /* ---------- start-up ---------- */
 function startGoogle(silent) {
   return getToken(silent).then(function () {
@@ -2220,7 +2379,8 @@ function startGoogle(silent) {
     if (OB.active && OB.email && OB.email !== G.email) OB = obBlank();
     if (OB.active) { if (G.cal) OB.cal = true; if (G.gmail) OB.mail = true; obSave(); render(); return; }
     if (!G.sheetId || !D.settings.name) { obStart(0); return; }
-    render(); if (pend && G.gmail) runScan({ mail: true, cal: D.settings.cal === "1" });
+    render(); if (pend && G.gmail) runScan(scanOpts());
+    else if (isFwd()) fwdPull().then(function () { if (FW.n) render(); }, function () {});
   });
 }
 function saveSetup() {
@@ -2237,7 +2397,7 @@ function saveSetup() {
 document.addEventListener("click", function (e) {
   var b = e.target.closest("button,a"); if (!b) { if (e.target.id === "shade") closeSheet(); return; }
   var d = b.dataset;
-  if (d.pick) { var g = b.parentNode; g.querySelectorAll(".pill").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); if (d.pick === "hasAgent") { var f = $("agentf"); if (f) f.hidden = d.v !== "Yes"; } if (d.pick === "terms") { var ef = $("extraf"), tn = $("termsnote"); if (ef) ef.hidden = d.v !== "TV drama"; if (tn) tn.textContent = TERMN[d.v]; swapCard("b-grade", cardOf(d.v)); } if (d.pick === "cterms") swapCard("c-grade", cardOf(d.v)); if (d.pick === "work") swapCard("s-grade", cardOf(d.v)); if (d.pick === "rcard") { openSheet(rateSheet(d.v)); return; } if (d.pick === "pjterms") { pj().terms = d.v; pjSave(); openSheet(crewSheet()); render(); return; } liveCalc(); return; }
+  if (d.pick) { var g = b.parentNode; g.querySelectorAll(".pill").forEach(function (x) { x.setAttribute("aria-pressed", String(x === b)); }); if (d.pick === "hasAgent") { var f = $("agentf"); if (f) f.hidden = d.v !== "Yes"; } if (d.pick === "terms") { var ef = $("extraf"), tn = $("termsnote"); if (ef) ef.hidden = d.v !== "TV drama"; if (tn) tn.textContent = TERMN[d.v]; swapCard("b-grade", cardOf(d.v)); } if (d.pick === "cterms") swapCard("c-grade", cardOf(d.v)); if (d.pick === "work") swapCard("s-grade", cardOf(d.v)); if (d.pick === "rcard") { openSheet(rateSheet(d.v)); return; } if (d.pick === "bankhow") { try { localStorage.setItem("sy-bankhow", d.v); } catch (e) {} var bx = b.closest(".bh"); if (bx) bx.querySelector(".bh-s").innerHTML = bankSteps(d.v); return; } if (d.pick === "obmail") { obRead(); OB.kind = d.v; obSave(); render(); if (d.v !== "Gmail") fwdNew(); return; } if (d.pick === "pjterms") { pj().terms = d.v; pjSave(); openSheet(crewSheet()); render(); return; } liveCalc(); return; }
   if (b.hasAttribute("data-close")) { closeSheet(); return; }
   if (obClick(b) || scanClick(b) || pjClick(b) || bankClick(b) || toolClick(b) || deptClick(b) || customClick(b)) return;
   if (b.hasAttribute("data-tournext")) { if (tourI < TOUR.length - 1) showTour(tourI + 1); else endTour(); return; }
